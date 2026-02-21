@@ -1,0 +1,27 @@
+domain: synthetic_markov_jump
+system_type: markov_jump_process
+scope:
+  applies_to: "Finite-state continuous-time Markov chains"
+  does_not_apply: "Systems lacking identifiable transition rates"
+entropy_proxy:
+  symbol: "\\Sigma"
+  definition_latex: "\\Sigma = \\sum_{i,j} p_i k_{ij} \\ln \\frac{k_{ij}}{k_{ji}}"
+  units: "k_B s^{-1}"
+  estimation_method: "Rate-matrix inference from dwell times"
+spectral_bands:
+  method: "Transition-count spectral decomposition"
+  phi_definition_latex: "\\phi_b = \\sum_{\\lambda \\in b} w_{\\lambda}"
+  bands: ["beta", "theta"]
+operators:
+  triggers: ["nonequilibrium driving"]
+  dampers: ["detailed-balance restoration"]
+bands:
+  beta:
+    distribution: "normal(mu=20,sigma=3)"
+  theta:
+    range: [3.0, 7.5]
+must_fail_tests:
+  - "status_outside_enum"
+  - "missing_scope_does_not_apply"
+citations: []
+status: review
