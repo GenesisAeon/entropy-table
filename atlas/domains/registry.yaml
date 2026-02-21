@@ -1,0 +1,4 @@
+domains:
+  - 00_synthetic/langevin.yaml
+  - 00_synthetic/markov.yaml
+  - 00_synthetic/generic.yaml
