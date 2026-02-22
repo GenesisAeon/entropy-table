@@ -1,0 +1,75 @@
+id: driven-dissipative-quantum-markov
+domain: Driven-Dissipative Quantum Markov Dynamics — Lindblad, Spohn Inequality, Liouvillian Gap
+system_type: quantum-open-markov
+entropy_quantity_kind: production_rate
+epistemic_status: theorem
+scope:
+  applies_to: |
+    - Cavity/circuit QED, driven-dissipative lattice models, quantum thermal machines
+    - Open weak-coupling Markovian quantum dynamics with Lindblad generators
+  does_not_apply: |
+    - Strong coupling, non-Markovian baths, initially correlated system-bath states
+    - Closed unitary systems and equilibrium Hamiltonian-only QPTs
+entropy_proxy:
+  symbol: sigma_Q
+  definition_latex: |
+    \frac{d\rho}{dt}=\mathcal{L}\rho=-i[H,\rho]+\sum_k\left(L_k\rho L_k^\dagger-\tfrac12\{L_k^\dagger L_k,\rho\}\right)
+    \\
+    \dot{\sigma}_Q=-\frac{d}{dt}S(\rho\|\rho_{\rm ss})
+    =-\mathrm{Tr}[\mathcal{L}\rho\,(\ln\rho-\ln\rho_{\rm ss})] \ge 0
+    \\
+    \Pi=\Pi_{\rm cl}+\Pi_{\rm qu}
+  units: k_B / s (nats/s)
+  estimation_method: |
+    theory
+    Born-Markov-secular approximation, unique steady state, and KMS/local detailed balance assumptions.
+    Multiple inequivalent EP definitions exist; equality at detailed balance is definition-dependent.
+spectral_bands:
+  method: none
+  phi_definition_latex: N/A — EP is decomposed by Liouvillian spectrum, not signal spectrum
+  bands:
+    - classical_EP_component Pi_cl from populations, smooth through DPTs
+    - quantum_EP_component Pi_qu from coherences, diverges at continuous DPTs as gap closes
+    - nonadiabatic_EP_during_quench showing Gaussian-model speed-independence across DPT
+operators:
+  triggers:
+    - Liouvillian_gap_closing with Delta_L -> 0 at second-order DPT and Pi_qu ~ 1/Delta_L
+    - quantum_Fisher_information KMB metric contribution to excess EP cost
+  dampers:
+    - Lindblad_jump_operators set dissipation channels and rates
+    - non_Markovian_correction can yield transient negative Spohn EP
+bands:
+  beta:
+    distribution: beta = sigma_Q / sigma_ref, with Pi_qu divergence possible at second-order DPT
+  theta:
+    range: [0.0, 1.0]
+  zeta:
+    distribution: zeta = sigma_Q * Delta_L, expected finite scaling combination near DPT
+must_fail_tests:
+  - |
+    test_name: Spohn_inequality_requires_Markovian_unique_NESS
+    statement: Non-Markovian memory can produce transient negative sigma_Q from relative-entropy definition.
+    expected_outcome: temporary sigma_Q < 0 despite overall thermodynamic consistency of enlarged system.
+    citation: Spohn (1978); Marcantoni et al. (2017)
+  - |
+    test_name: quantum_EP_not_diverge_at_first_order_DPT
+    statement: First-order DPT gives jump in Pi_qu, not critical divergence.
+    expected_outcome: discontinuity without continuous divergence.
+    citation: Goes et al. (2020); Minganti et al. (2018)
+  - |
+    test_name: multiple_EP_definitions_inequivalent
+    statement: Distinct quantum EP definitions give different numerical values except at detailed balance.
+    expected_outcome: all nonnegative but generally inequivalent away from equilibrium.
+    citation: Landi & Paternostro (2021)
+citations:
+  - "Spohn H (1978) J Math Phys 19:1227; DOI 10.1063/1.523789"
+  - "Lindblad G (1976) Commun Math Phys 48:119; DOI 10.1007/BF01608499"
+  - "Landi GT & Paternostro M (2021) Rev Mod Phys 93:035008; DOI 10.1103/RevModPhys.93.035008"
+  - "Goes T, Fiore AS & Landi GT (2020) PRR 2:013136; DOI 10.1103/PhysRevResearch.2.013136"
+  - "Minganti F et al. (2018) PRA 98:042118; DOI 10.1103/PhysRevA.98.042118"
+  - "Marcantoni S et al. (2017) Sci Rep 7:12447; DOI 10.1038/s41598-017-12595-x"
+  - "Santos JP et al. (2019) npj Quantum Inf 5:23; DOI 10.1038/s41534-019-0138-y"
+  - "arXiv:2512.05074 (2024) — thermodynamic universality across DQPTs"
+  - "arXiv:2506.04740 (2025) — time glasses, finite gap, symmetry breaking"
+  - "Tong et al. arXiv:2512.06707 (2025) — quantum detailed balance proof"
+status: stable

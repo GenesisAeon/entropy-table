@@ -1,0 +1,36 @@
+id: underdamped-to-overdamped-limit
+source_domain_ref: underdamped-langevin-st
+target_domain_ref: overdamped-langevin-st
+relation_type: limit_mapping
+what_is_preserved:
+  - Integral fluctuation theorem structure
+  - Non-negativity of total entropy production
+  - Equilibrium zero-EP condition for conservative forces
+what_is_lost:
+  - Anomalous EP from spatially varying temperature
+  - Velocity-space irreversibility contributions
+  - Spinney-Ford third housekeeping component
+  - Inertial corrections to fluctuation bounds
+conditions:
+  text: |
+    Valid for m/gamma much smaller than all driving timescales, with spatially uniform temperature
+    and position-independent friction. For nonuniform T(x) or gamma(x), the limit is singular for EP.
+  params:
+    inertial_timescale_ratio: m/gamma << tau_system
+    temperature_uniformity: T = const
+expected_effect_on_entropy_measure:
+  direction: decrease
+  description: |
+    In uniform-temperature settings the limit can be regular; with temperature gradients the overdamped EP
+    strictly underestimates true underdamped EP by the positive anomalous correction term.
+must_fail_tests:
+  - |
+    test_name: nonuniform_T_overdamped_underestimates_EP
+    statement: sigma_true - sigma_od equals (5/6)*integral[rho*(nabla T)^2/(gamma*T)] dx for T(x).
+    expected_outcome: sigma_true > sigma_od
+    citation: Celani et al. (2012)
+citations:
+  - "Celani A, Bo S, Eichhorn R, Aurell E (2012) PRL 109:260603; DOI 10.1103/PhysRevLett.109.260603"
+  - "Spinney RE & Ford IJ (2012) PRL 108:170603; DOI 10.1103/PhysRevLett.108.170603"
+  - "Seifert U (2012) Rep Prog Phys 75:126001"
+status: stable

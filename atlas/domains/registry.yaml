@@ -5,3 +5,13 @@ domains:
     path: 00_synthetic/markov.yaml
   - id: synthetic-generic
     path: 00_synthetic/generic.yaml
+  - id: overdamped-langevin-st
+    path: overdamped-langevin-st.yaml
+  - id: underdamped-langevin-st
+    path: underdamped-langevin-st.yaml
+  - id: ctmc-schnakenberg
+    path: ctmc-schnakenberg.yaml
+  - id: generic-thermodynamics
+    path: generic-thermodynamics.yaml
+  - id: driven-dissipative-quantum-markov
+    path: driven-dissipative-quantum-markov.yaml

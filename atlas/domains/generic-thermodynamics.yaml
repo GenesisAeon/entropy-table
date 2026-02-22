@@ -1,0 +1,66 @@
+id: generic-thermodynamics
+domain: GENERIC Framework — General Equation for Non-Equilibrium Reversible-Irreversible Coupling
+system_type: classical-continuum-deterministic-thermodynamic
+entropy_quantity_kind: production_rate
+epistemic_status: theorem
+scope:
+  applies_to: |
+    - Complex fluids, MHD, relativistic hydrodynamics, kinetic theory
+    - Mesoscale coarse-grained systems with identified state variables
+    - Coupled mechanical-thermal-chemical systems with timescale separation
+  does_not_apply: |
+    - Quantum systems without quantum GENERIC extension
+    - Systems lacking clear energy/entropy functionals
+    - Non-Markovian memory kernels not represented by instantaneous M
+entropy_proxy:
+  symbol: sigma_G
+  definition_latex: |
+    \frac{dz}{dt} = L(z)\cdot\frac{\delta E}{\delta z} + M(z)\cdot\frac{\delta S}{\delta z}
+    \\
+    \dot{\sigma}_G = \left(\frac{\delta S}{\delta z}\right)^T M(z) \frac{\delta S}{\delta z} = [S,S]_M \ge 0
+    \\
+    L\cdot\frac{\delta S}{\delta z}=0,\quad M\cdot\frac{\delta E}{\delta z}=0
+  units: W/K
+  estimation_method: |
+    theory
+    Requires antisymmetric Poisson operator L, symmetric positive semidefinite dissipation operator M,
+    and degeneracy conditions. EP_EQUALS_ZERO_WHEN M=0 or delta S/delta z = 0.
+spectral_bands:
+  method: none
+  phi_definition_latex: N/A — GENERIC EP is a functional, not spectrally decomposed
+  bands:
+    - reversible_contribution from L * delta_E/delta_z is entropy-neutral
+    - irreversible_contribution from M * delta_S/delta_z generates all EP
+operators:
+  triggers:
+    - friction_matrix_M encodes viscosity, conduction, diffusion, and chemical relaxation with EP quadratic form
+    - Poisson_bracket_L encodes reversible dynamics and must satisfy Jacobi identity
+  dampers:
+    - Onsager_Casimir_symmetry constrains M blocks by time-reversal parity
+    - structure_preserving_coarse_graining via Green-Kubo preserves GENERIC consistency
+bands:
+  beta:
+    distribution: beta = sigma_G / sigma_ref, nonnegative and potentially unbounded
+  theta:
+    range: [0.0, 1.0]
+  zeta:
+    range: [0.0, 1.0]
+must_fail_tests:
+  - |
+    test_name: degeneracy_conditions_mandatory
+    statement: If L*delta_S or M*delta_E degeneracy conditions fail, GENERIC guarantees break.
+    expected_outcome: energy conservation and/or second law violation; framework inapplicable.
+    citation: Grmela & Öttinger (1997); Öttinger (2005)
+  - |
+    test_name: non_Markovian_memory_breaks_GENERIC
+    statement: Mori-Zwanzig memory kernels are not captured by Markovian GENERIC with constant M.
+    expected_outcome: underestimated EP and need for generalized frequency-dependent operators.
+    citation: Öttinger (2005); Mielke et al. (2014)
+citations:
+  - "Grmela M & Öttinger HC (1997) PRE 56:6620; DOI 10.1103/PhysRevE.56.6620"
+  - "Öttinger HC & Grmela M (1997) PRE 56:6633; DOI 10.1103/PhysRevE.56.6633"
+  - "Öttinger HC (2005) Beyond Equilibrium Thermodynamics. Wiley, Hoboken NJ"
+  - "Mielke A, Peletier MA & Renger DRM (2014) Potential Analysis 41:1293; DOI 10.1007/s11118-014-9418-5"
+  - "Öttinger HC & Struchtrup H (2007) Multiscale Model Simul 6:53; DOI 10.1137/060650442"
+  - "Gay-Balmaz F & Yoshimura H (2017) J Geom Phys 111:169; DOI 10.1016/j.geomphys.2016.08.013"
+status: stable
