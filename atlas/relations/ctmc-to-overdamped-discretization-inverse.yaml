@@ -1,0 +1,36 @@
+id: ctmc-to-overdamped-discretization-inverse
+source_domain_ref: ctmc-schnakenberg
+target_domain_ref: overdamped-langevin-st
+relation_type: limit_mapping
+what_is_preserved:
+  - KL-divergence interpretation of entropy production
+  - Integral fluctuation theorem
+  - Detailed-balance equivalence with zero EP
+  - Cycle-affinity analog structure
+what_is_lost:
+  - Continuous spatial current field structure
+  - Local entropy-production density resolution
+  - Anomalous EP from spatial temperature gradients
+  - Sub-cell dynamics below discretization scale
+conditions:
+  text: |
+    CTMC-to-diffusion limit requires lattice spacing dx -> 0 with w_ij*dx^2 fixed to D,
+    exponentially distributed holding times, and uniform-temperature conditions.
+  params:
+    diffusion_limit: w_ij * dx^2 = D
+expected_effect_on_entropy_measure:
+  direction: context_dependent
+  description: |
+    Along CTMC -> diffusion refinement, sigma_CTMC converges toward sigma_Langevin.
+    At finite discretization sigma_CTMC approximates continuum EP; reverse coarse-graining lowers EP.
+must_fail_tests:
+  - |
+    test_name: absorbing_state_EP_requires_regularization
+    statement: Contact-process absorbing phase requires regularizing 0*ln(0)-type terms in sigma_S.
+    expected_outcome: sigma_S -> 0 as p -> 0 with limiting procedure.
+    citation: Tomé & de Oliveira (2024)
+citations:
+  - "Schnakenberg J (1976) Rev Mod Phys 48:571"
+  - "Seifert U (2012) Rep Prog Phys 75:126001"
+  - "Lebowitz JL & Spohn H (1999) J Stat Phys 95:333"
+status: stable

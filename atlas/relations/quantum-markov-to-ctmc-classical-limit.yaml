@@ -1,0 +1,46 @@
+id: quantum-markov-to-ctmc-classical-limit
+source_domain_ref: driven-dissipative-quantum-markov
+target_domain_ref: ctmc-schnakenberg
+relation_type: limit_mapping
+what_is_preserved:
+  - Population-sector classical entropy production Pi_cl
+  - Classical current fluctuation theorem structure
+  - Detailed-balance correspondence at rate level
+  - Classical cycle-affinity interpretation
+what_is_lost:
+  - Quantum coherence entropy production Pi_qu
+  - Off-diagonal density-matrix dynamics
+  - Quantum fluctuation relations and coherence-sensitive bounds
+  - DPT quantum divergence signatures in Pi_qu
+  - Entanglement-mediated dissipation channels
+conditions:
+  text: |
+    Classical limit requires fast decoherence, high-temperature scaling, and operation away from regimes
+    where coherence-driven EP dominates; near DPT the approximation fails catastrophically.
+  params:
+    decoherence_condition: tau_D * omega << 1
+    thermal_condition: k_BT >> hbar * omega_0
+    distance_from_DPT: Pi_qu / Pi_cl << 1
+expected_effect_on_entropy_measure:
+  direction: decrease
+  description: |
+    Classical reduction drops the quantum EP contribution so sigma_CTMC = Pi_cl <= sigma_Q = Pi_cl + Pi_qu,
+    with severe underestimation near dissipative criticality where Pi_qu diverges.
+must_fail_tests:
+  - |
+    test_name: classical_limit_misses_DPT_EP_divergence
+    statement: Near second-order DPT, Pi_cl is smooth while Pi_qu diverges as Liouvillian gap closes.
+    expected_outcome: classical limit misses diverging entropy-production contribution.
+    citation: Goes et al. (2020)
+  - |
+    test_name: quantum_TUR_differs_from_classical
+    statement: Classical TUR may appear violated if sigma_CTMC is used when coherences are nonzero.
+    expected_outcome: corrected bound requires full quantum dissipation contribution.
+    citation: Hasegawa (2020); Van Vu & Saito (2022)
+citations:
+  - "Landi GT & Paternostro M (2021) Rev Mod Phys 93:035008"
+  - "Goes T, Fiore AS & Landi GT (2020) PRR 2:013136"
+  - "Spohn H (1978) J Math Phys 19:1227"
+  - "Hasegawa Y (2020) PRL 125:050601"
+  - "Schnakenberg J (1976) Rev Mod Phys 48:571"
+status: stable

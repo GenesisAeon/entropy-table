@@ -1,0 +1,110 @@
+id: overdamped-langevin-st
+domain: Overdamped Langevin Stochastic Thermodynamics
+system_type: classical-continuous-stochastic
+entropy_quantity_kind: production_rate
+epistemic_status: theorem
+scope:
+  applies_to: |
+    - Colloidal particles in viscous media
+    - Molecular motors at mesoscale
+    - Chemical Langevin equations (well-stirred, overdamped)
+    - Feedback-controlled diffusion experiments
+  does_not_apply: |
+    - Systems with non-negligible inertia (m/gamma not << 1)
+    - Non-Markovian (colored noise, generalized Langevin) systems
+    - Spatially nonuniform temperature without anomalous EP correction
+    - Systems with odd-parity degrees of freedom (velocities, magnetic moments)
+    - Active matter without well-defined bath temperature
+entropy_proxy:
+  symbol: sigma
+  definition_latex: |
+    \dot{\sigma} = \int dx\, \frac{J(x,t)^2}{D\, p(x,t)}
+    = \int dx\, p(x,t)\, v(x,t)^2 / D
+    \quad \text{where } J = \frac{F}{\gamma}p - D\nabla p,\;
+    v = J/p,\; D = k_BT/\gamma
+  units: k_B / s (or W/K if multiplied by T)
+  estimation_method: |
+    theory
+    Assumptions:
+    - Markovian (white Gaussian noise)
+    - Local detailed balance: noise variance = 2 gamma k_B T
+    - Single thermal reservoir at constant temperature T
+    - Overdamped limit: m/gamma << all relevant timescales
+    - Ito or Stratonovich consistent with physical prescription
+      (Seifert 2012 notes both; Stratonovich required for multiplicative noise)
+    EP_EQUALS_ZERO_WHEN:
+    Detailed balance holds: F(x) = -nabla V(x) (purely conservative force)
+    => stationary distribution p_eq proportional to exp(-V/k_BT),
+    probability current J_ss = 0 everywhere.
+    Reference: Seifert, Rep. Prog. Phys. 75, 126001 (2012), Sec. 2.
+spectral_bands:
+  method: none
+  phi_definition_latex: N/A — EP is a time-domain rate, not spectrally decomposed in standard formulation
+  bands:
+    - |
+      housekeeping: sigma_hk — EP maintaining NESS against perturbation; finite in steady state even at stationarity.
+      Hatano-Sasa decomposition: sigma_tot = sigma_hk + sigma_ex; sigma_hk >= 0 and sigma_ex >= 0 each satisfy integral FTs.
+      Reference: Hatano & Sasa, PRL 86, 3463 (2001); Esposito & Van den Broeck, PRL 104, 090601 (2010).
+    - |
+      excess: sigma_ex — EP during relaxation toward new steady state; vanishes in true NESS.
+      sigma_ex = -d/dt D_KL(p(t) || p_ss).
+      Can become negative in systems without complex-balanced steady states (Yoshimura et al., PRR 5, 013017, 2023).
+operators:
+  triggers:
+    - |
+      probability_current_magnitude: |J(x)| = |F(x)/gamma * p(x) - D * nabla p(x)|; EP rate is proportional to integral of J^2/p.
+      Non-zero J is necessary and sufficient for sigma > 0. Params: friction gamma, diffusion D = k_BT/gamma.
+      J=0 everywhere <=> detailed balance <=> sigma=0.
+    - |
+      EP_derivative_at_transition: d sigma / d control_parameter diverges logarithmically at continuous nonequilibrium phase transitions:
+      sigma ~ sigma_c + A |epsilon| ln|epsilon| where epsilon = (T - T_c)/T_c.
+      EP itself remains finite; only its derivative diverges. Reference: Tomé & de Oliveira, PRL 108, 020601 (2012).
+  dampers:
+    - |
+      friction_coefficient: gamma (Ns/m) — sets dissipation scale.
+      Params: gamma in range [1e-12, 1e-6] Ns/m for colloidal systems.
+      sigma proportional to 1/gamma * integral F_nc^2 p dx for NESS.
+    - |
+      coarse_graining_projection: Lumping many microstates to fewer macrostates.
+      sigma_CG <= sigma_true (theorem, data processing inequality).
+      Severe in practice: coarse-grained sigma can be zero even when sigma_true >> 0.
+bands:
+  beta:
+    distribution: |
+      beta = sigma / sigma_ref where sigma_ref is reference NESS EP rate.
+      beta = 0 at equilibrium. No upper bound in general.
+      Near criticality: beta shows kink but not divergence.
+  theta:
+    range: [0.0, 1.0]
+  zeta:
+    range: [0.0, 1.0]
+must_fail_tests:
+  - |
+    test_name: detailed_balance_implies_zero_EP
+    statement: For a system with F(x) = -nabla V(x) (conservative force), at any temperature T, the EP rate sigma must equal zero.
+    expected_outcome: sigma = 0
+    why_it_must_fail_or_hold: Holds by theorem: J_ss = 0 everywhere when detailed balance satisfied. Violation would contradict the second law for closed systems.
+    citation: Seifert, Rep. Prog. Phys. 75, 126001 (2012), Sec. 2.3
+  - |
+    test_name: EP_not_diverge_at_continuous_transition
+    statement: At a continuous nonequilibrium phase transition (e.g., Ising NESS), EP per site must remain finite (not diverge) as system size -> infinity at criticality, while d(sigma)/d(control) may diverge.
+    expected_outcome: sigma_c is finite; d sigma/dT diverges logarithmically
+    why_it_must_fail_or_hold: EP is not a free energy; it has no thermodynamic reason to diverge. Divergence of derivative reflects order-parameter susceptibility, not EP itself.
+    citation: Tomé & de Oliveira, PRL 108, 020601 (2012); Fernández Noa et al., PRE 100, 012104 (2019)
+  - |
+    test_name: TUR_lower_bound_on_current_fluctuations
+    statement: For any time-integrated current J_t in overdamped Langevin NESS: Var(J_t) / <J_t>^2 >= 2 k_B / (sigma_tot * t)
+    expected_outcome: Inequality holds with equality for linear networks
+    why_it_must_fail_or_hold: Proven by multiple independent methods. Violation would imply precision-dissipation tradeoff is beatable in NESS — refuted.
+    citation: Barato & Seifert (2015); Gingrich et al. (2016); Dieball & Godec (2023)
+citations:
+  - "Seifert U (2005) PRL 95:040602; DOI 10.1103/PhysRevLett.95.040602"
+  - "Seifert U (2012) Rep Prog Phys 75:126001; DOI 10.1088/0034-4885/75/12/126001"
+  - "Crooks GE (1999) PRE 60:2721; DOI 10.1103/PhysRevE.60.2721"
+  - "Hatano T & Sasa SI (2001) PRL 86:3463; DOI 10.1103/PhysRevLett.86.3463"
+  - "Esposito M & Van den Broeck C (2010) PRL 104:090601; DOI 10.1103/PhysRevLett.104.090601"
+  - "Tomé T & de Oliveira MJ (2012) PRL 108:020601; DOI 10.1103/PhysRevLett.108.020601"
+  - "Barato AC & Seifert U (2015) PRL 114:158101; DOI 10.1103/PhysRevLett.114.158101"
+  - "Celani A, Bo S, Eichhorn R, Aurell E (2012) PRL 109:260603; DOI 10.1103/PhysRevLett.109.260603"
+  - "Maes C (2020) Phys Rep 850:1; DOI 10.1016/j.physrep.2020.01.002"
+status: stable

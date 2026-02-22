@@ -1,0 +1,40 @@
+id: overdamped-to-ctmc-discretization
+source_domain_ref: overdamped-langevin-st
+target_domain_ref: ctmc-schnakenberg
+relation_type: coarse_graining
+what_is_preserved:
+  - Detailed balance criterion equivalence
+  - KL-divergence path-space interpretation of entropy production
+  - Housekeeping/excess decomposition pattern
+  - Integral fluctuation theorem structure
+  - TUR inequality structure
+what_is_lost:
+  - Spatially resolved probability current field J(x)
+  - Continuous phase-space geometry
+  - Position-dependent diffusion D(x)
+  - Anomalous EP from spatial temperature gradients
+  - Full path-space frenesy decomposition
+conditions:
+  text: |
+    Valid when the continuous state space is partitioned into cells with fast intra-cell equilibration,
+    rates satisfy local detailed balance, and effective CTMC remains bidirectionally connected.
+  params:
+    timescale_separation: required
+    connectivity: bidirectional transitions required
+expected_effect_on_entropy_measure:
+  direction: decrease
+  description: |
+    Discretized apparent entropy production is a lower bound on continuous entropy production at finite resolution,
+    converging to the continuous value as cell size approaches zero when no sub-cell EP-carrying structure remains.
+must_fail_tests:
+  - |
+    test_name: two_state_lump_gives_zero
+    statement: Any N-state irreversible CTMC lumped to two macrostates yields sigma_CG = 0.
+    expected_outcome: sigma_CG = 0
+    citation: Puglisi et al. (2010)
+citations:
+  - "Seifert U (2012) Rep Prog Phys 75:126001"
+  - "Schnakenberg J (1976) Rev Mod Phys 48:571; DOI 10.1103/RevModPhys.48.571"
+  - "Puglisi A et al. (2010) JSTAT P05015; DOI 10.1088/1742-5468/2010/05/P05015"
+  - "Esposito M (2012) PRE 85:041125; DOI 10.1103/PhysRevE.85.041125"
+status: stable

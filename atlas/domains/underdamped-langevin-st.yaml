@@ -1,0 +1,83 @@
+id: underdamped-langevin-st
+domain: Underdamped Langevin Stochastic Thermodynamics
+system_type: classical-continuous-stochastic-phase-space
+entropy_quantity_kind: production_rate
+epistemic_status: theorem
+scope:
+  applies_to: |
+    - Nanomechanical oscillators in weak damping regime
+    - Charged particles in electromagnetic fields (Lorentz force)
+    - Active matter with underdamped inertia
+    - Optical traps with nonnegligible particle mass
+    - Heat engines operating on mesoscale oscillators
+  does_not_apply: |
+    - Overdamped regime (m/gamma -> 0)
+    - Non-Markovian baths (generalized Langevin equation)
+    - Quantum systems
+    - Systems where local detailed balance is violated (active forces)
+entropy_proxy:
+  symbol: sigma_ud
+  definition_latex: |
+    \text{EOM: } m\ddot{x} = F(x) - \gamma\dot{x} + \sqrt{2\gamma k_BT}\,\xi(t)
+    \\
+    \Delta s_\text{tot}[\mathbf{x}] = \Delta s_\text{sys} + \Delta s_\text{env}
+    \\
+    \Delta s_\text{env} = -\frac{1}{T}\int_0^\tau \dot{x}\circ[-\gamma\dot{x}+F]dt
+    \quad (\text{Stratonovich}),\quad \dot{\sigma}=\langle\Delta s_\text{tot}\rangle/\tau\ge 0
+  units: k_B / s
+  estimation_method: |
+    theory
+    Full phase space (x,v) required. Markovian dynamics with local detailed balance.
+    True vs apparent EP: sigma_true = sigma_od + sigma_anomalous,
+    sigma_anomalous = (5/6) * integral[rho(x) * (nabla T)^2 / (gamma(x)*T(x))] dx > 0.
+    EP_EQUALS_ZERO_WHEN equilibrium Maxwell-Boltzmann state.
+spectral_bands:
+  method: none
+  phi_definition_latex: N/A — no standard spectral decomposition of EP for underdamped Langevin
+  bands:
+    - |
+      anomalous_EP_from_T_gradient: sigma_anomalous = (5/6) * integral[rho * (nabla T)^2 / (gamma*T)] dx.
+      Nonzero even in m -> 0 limit when T = T(x). Satisfies own integral FT.
+    - |
+      inertial_correction_band: EP correction from inertia at timescale tau_m = m/gamma.
+      Spinney-Ford decomposition includes a third housekeeping term unique to underdamped dynamics.
+operators:
+  triggers:
+    - |
+      odd_variable_probability_current in phase space (x,v):
+      J(x,v) = (F/m - gamma*v/m)*p - (k_BT*gamma/m^2)*d(p)/d(v),
+      EP rate = integral J^2 / (D_v * p) dx dv with D_v = k_BT*gamma/m^2.
+    - |
+      resonance_EP_peak: EP vs damping gamma can be non-monotonic with a peak when persistence time matches oscillation period.
+  dampers:
+    - |
+      friction_coefficient_underdamped: gamma sets momentum relaxation gamma/m,
+      but sigma is not simply proportional to 1/gamma; dependence can be non-monotonic.
+    - |
+      lorentz_force_damper: magnetic Lorentz force does no work yet can induce standard TUR violations.
+bands:
+  beta:
+    distribution: beta = m * omega_0 / gamma, spanning overdamped to underdamped regimes with no finite universal upper bound
+  theta:
+    range: [0.0, 1.0]
+  zeta:
+    distribution: zeta = sigma_true / sigma_od, with zeta >= 1 and unbounded above
+must_fail_tests:
+  - |
+    test_name: standard_TUR_violated_for_underdamped
+    statement: Overdamped TUR Var(J_t)/<J_t>^2 >= 2/(sigma*t) applied to underdamped NESS can fail.
+    expected_outcome: TUR violated; corrected bounds require additional dynamical activity term.
+    citation: Van Vu & Hasegawa (2019); Fischer et al. (2020)
+  - |
+    test_name: overdamped_limit_misses_anomalous_EP
+    statement: For T(x), overdamped limit misses sigma_anomalous = (5/6)*integral[rho*(nabla T)^2/(gamma*T)] dx.
+    expected_outcome: sigma_anomalous > 0 and is invisible in overdamped description.
+    citation: Celani et al. (2012)
+citations:
+  - "Spinney RE & Ford IJ (2012) PRL 108:170603; DOI 10.1103/PhysRevLett.108.170603"
+  - "Celani A, Bo S, Eichhorn R, Aurell E (2012) PRL 109:260603; DOI 10.1103/PhysRevLett.109.260603"
+  - "Van Vu TL & Hasegawa Y (2019) PRE 100:032130; DOI 10.1103/PhysRevE.100.032130"
+  - "Fischer LP, Chun HM, Seifert U (2020) PRE 102:012120; DOI 10.1103/PhysRevE.102.012120"
+  - "Seifert U (2012) Rep Prog Phys 75:126001; DOI 10.1088/0034-4885/75/12/126001"
+  - "Pietzonka P (2022) PRL 128:130606; DOI 10.1103/PhysRevLett.128.130606"
+status: stable

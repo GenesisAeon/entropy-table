@@ -1,0 +1,75 @@
+id: ctmc-schnakenberg
+domain: Continuous-Time Markov Chains — Schnakenberg Network Thermodynamics
+system_type: classical-discrete-stochastic
+entropy_quantity_kind: production_rate
+epistemic_status: theorem
+scope:
+  applies_to: |
+    - Biochemical reaction networks, ion channel gating, genetic regulation
+    - Driven lattice gases and absorbing-state transitions
+    - Discrete-state stochastic dynamics with bidirectional transitions
+  does_not_apply: |
+    - Continuous phase spaces
+    - Semi-Markov/renewal processes without embedding
+    - Unidirectional transitions (w_ij > 0 but w_ji = 0; formal EP divergence)
+entropy_proxy:
+  symbol: sigma_S
+  definition_latex: |
+    \dot{\sigma}_S = \frac{1}{2}\sum_{i\neq j}(\pi_i w_{ij}-\pi_j w_{ji})\ln\frac{\pi_i w_{ij}}{\pi_j w_{ji}} \ge 0
+    \\
+    \dot{\sigma}_S = \sum_\alpha J_\alpha A_\alpha,
+    \quad A_\alpha = \ln\left(\prod_\text{fwd} w_{ij} / \prod_\text{bwd} w_{ji}\right)
+  units: k_B / s (nats/s)
+  estimation_method: |
+    theory
+    Finite irreducible ergodic CTMC with bidirectional transitions and stationary distribution pi.
+    EP_EQUALS_ZERO_WHEN detailed balance pi_i w_ij = pi_j w_ji for all edges,
+    equivalently all cycle affinities vanish (Kolmogorov criterion).
+spectral_bands:
+  method: none
+  phi_definition_latex: N/A — EP is cycle-decomposed, not spectrally decomposed
+  bands:
+    - "housekeeping_EP: sigma_hk in NESS equals sigma_S"
+    - "excess_EP: sigma_ex = -d/dt D_KL(p(t) || p_ss), can be negative in non-complex-balanced systems"
+    - "cycle_affinity_decomposition: per-cycle sigma_alpha = J_alpha * A_alpha"
+operators:
+  triggers:
+    - cycle_affinity A_alpha as topological driving force; zero iff detailed balance on cycle
+    - EP_derivative_at_absorbing_transition diverges while sigma remains finite
+  dampers:
+    - lumping_coarse_graining with theorem sigma_CG <= sigma_S and two-state lumping sigma_CG = 0
+    - rate_matrix_spectral_gap controls relaxation and EP fluctuations near criticality
+bands:
+  beta:
+    distribution: beta = sigma_S / (k_B * escape_rate_ref), nonnegative and unbounded above
+  theta:
+    range: [0.0, 1.0]
+  zeta:
+    range: [0.0, 1.0]
+must_fail_tests:
+  - |
+    test_name: two_state_lumping_zero_EP
+    statement: Any irreversible N-state CTMC lumped to two macrostates gives sigma_CG = 0.
+    expected_outcome: sigma_CG = 0
+    citation: Puglisi et al. (2010)
+  - |
+    test_name: EP_finite_at_absorbing_state_criticality
+    statement: At contact-process critical point, sigma/N finite while derivative diverges.
+    expected_outcome: sigma/N finite; derivative diverges
+    citation: Tomé & de Oliveira (2024); Fernández Noa et al. (2019)
+  - |
+    test_name: Kolmogorov_criterion_equivalence
+    statement: sigma_S = 0 iff forward/backward rate products match on every cycle.
+    expected_outcome: equivalence holds exactly
+    citation: Schnakenberg (1976)
+citations:
+  - "Schnakenberg J (1976) Rev Mod Phys 48:571; DOI 10.1103/RevModPhys.48.571"
+  - "Lebowitz JL & Spohn H (1999) J Stat Phys 95:333; DOI 10.1023/A:1004589714161"
+  - "Hatano T & Sasa SI (2001) PRL 86:3463; DOI 10.1103/PhysRevLett.86.3463"
+  - "Esposito M & Van den Broeck C (2010) PRL 104:090601; DOI 10.1103/PhysRevLett.104.090601"
+  - "Tomé T & de Oliveira MJ (2012) PRL 108:020601; DOI 10.1103/PhysRevLett.108.020601"
+  - "Puglisi A et al. (2010) JSTAT P05015; DOI 10.1088/1742-5468/2010/05/P05015"
+  - "Bertini L et al. (2015) Ann Henri Poincaré; arXiv:1710.08001"
+  - "Tomé T & de Oliveira MJ (2024) arXiv:2405.06751"
+  - "Yoshimura K et al. (2023) PRR 5:013017; DOI 10.1103/PhysRevResearch.5.013017"
+status: stable

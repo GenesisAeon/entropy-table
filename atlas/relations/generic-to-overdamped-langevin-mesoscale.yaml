@@ -1,0 +1,38 @@
+id: generic-to-overdamped-langevin-mesoscale
+source_domain_ref: generic-thermodynamics
+target_domain_ref: overdamped-langevin-st
+relation_type: coarse_graining
+what_is_preserved:
+  - Second-law non-negativity structure
+  - Onsager-Casimir reciprocity constraints
+  - Equilibrium zero-driving condition correspondence
+  - Positive semi-definiteness of dissipation
+what_is_lost:
+  - Explicit Poisson-bracket reversible structure
+  - Full high-dimensional state variables
+  - Non-Markovian memory effects
+  - Deterministic mean-field closure only
+  - Nonlinear flux-force effects beyond linear Onsager regime
+conditions:
+  text: |
+    Requires fluctuation-dissipation-consistent noise, identifiable mesoscopic variables,
+    timescale separation enabling momentum elimination, and near-linear response regime.
+  params:
+    fluctuation_dissipation: noise^2 = 2 k_BT * M
+    linear_regime: small thermodynamic forces
+expected_effect_on_entropy_measure:
+  direction: context_dependent
+  description: |
+    Mean-field GENERIC entropy production approximates ensemble-averaged Langevin entropy production,
+    with nonlinear stochastic effects typically increasing the latter relative to deterministic closure.
+must_fail_tests:
+  - |
+    test_name: nonlinear_flux_force_breaks_GENERIC_Langevin_equivalence
+    statement: Nonlinear flux-force relations yield sigma_GENERIC != <sigma_Langevin>.
+    expected_outcome: sigma_GENERIC underestimates stochastic entropy production without extension.
+    citation: Gay-Balmaz & Yoshimura (2017)
+citations:
+  - "Grmela M & Öttinger HC (1997) PRE 56:6620; DOI 10.1103/PhysRevE.56.6620"
+  - "Öttinger HC (2005) Beyond Equilibrium Thermodynamics. Wiley"
+  - "Mielke A, Peletier MA & Renger DRM (2014) Potential Analysis 41:1293"
+status: review
