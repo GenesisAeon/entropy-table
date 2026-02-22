@@ -1,0 +1,3 @@
+relations:
+  - 00_synthetic/underdamped_to_overdamped.yaml
+  - 00_synthetic/micro_to_macro_coarsegrain.yaml

@@ -5,8 +5,11 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
+    "id",
     "domain",
     "system_type",
+    "entropy_quantity_kind",
+    "epistemic_status",
     "scope",
     "entropy_proxy",
     "spectral_bands",
@@ -17,6 +20,10 @@
     "status"
   ],
   "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
     "domain": {
       "type": "string",
       "minLength": 1
@@ -24,6 +31,27 @@
     "system_type": {
       "type": "string",
       "minLength": 1
+    },
+    "entropy_quantity_kind": {
+      "type": "string",
+      "enum": [
+        "production_rate",
+        "entropy_flux",
+        "state_entropy",
+        "budget_entropy",
+        "proxy_other"
+      ]
+    },
+    "epistemic_status": {
+      "type": "string",
+      "enum": [
+        "theorem",
+        "empirical",
+        "numerical",
+        "heuristic",
+        "disputed",
+        "open_problem"
+      ]
     },
     "scope": {
       "type": "object",

@@ -1,0 +1,20 @@
+id: micro-to-macro-coarsegrain
+source_domain_ref: synthetic-markov-jump
+target_domain_ref: synthetic-generic
+relation_type: coarse_graining
+what_is_preserved:
+  - "Steady-state qualitative irreversibility"
+what_is_lost:
+  - "Cycle-level current decomposition"
+  - "Exact housekeeping/excess split"
+conditions:
+  text: "Aggregate microstates into mesostates with lumpability approximated numerically."
+  params:
+    coarse_grain_bins: 4
+expected_effect_on_entropy_measure:
+  direction: context_dependent
+  description: "Apparent entropy production can increase or decrease depending on hidden flux cancellations."
+must_fail_tests:
+  - "empty_what_is_preserved"
+citations: []
+status: review

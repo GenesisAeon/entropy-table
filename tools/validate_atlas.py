@@ -6,10 +6,16 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
-from common import SCHEMA_PATH, domain_files, load_yaml
+from common import (
+    DOMAIN_SCHEMA_PATH,
+    RELATION_SCHEMA_PATH,
+    domain_files,
+    load_yaml,
+    relation_files,
+)
 
 
-def validate_domain(path: Path, validator: Draft202012Validator) -> list[str]:
+def validate_payload(path: Path, validator: Draft202012Validator) -> list[str]:
     data = load_yaml(path)
     errors = sorted(validator.iter_errors(data), key=lambda e: list(e.path))
     out: list[str] = []
@@ -20,21 +26,49 @@ def validate_domain(path: Path, validator: Draft202012Validator) -> list[str]:
 
 
 def main() -> int:
-    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
-    validator = Draft202012Validator(schema)
+    domain_schema = json.loads(DOMAIN_SCHEMA_PATH.read_text(encoding="utf-8"))
+    relation_schema = json.loads(RELATION_SCHEMA_PATH.read_text(encoding="utf-8"))
+    domain_validator = Draft202012Validator(domain_schema)
+    relation_validator = Draft202012Validator(relation_schema)
 
-    files = [f for f in domain_files() if f.name != "registry.yaml"]
+    domain_paths = [f for f in domain_files() if f.name != "registry.yaml"]
+    relation_paths = [f for f in relation_files() if f.name != "registry.yaml"]
+
     all_errors: list[str] = []
-    for path in files:
-        all_errors.extend(validate_domain(path, validator))
+    domain_ids: set[str] = set()
+
+    for path in domain_paths:
+        all_errors.extend(validate_payload(path, domain_validator))
+        data = load_yaml(path)
+        domain_id = data.get("id")
+        if isinstance(domain_id, str):
+            if domain_id in domain_ids:
+                all_errors.append(f"{path}: id: duplicate domain id '{domain_id}'")
+            domain_ids.add(domain_id)
+
+    for path in relation_paths:
+        all_errors.extend(validate_payload(path, relation_validator))
+        data = load_yaml(path)
+        source = data.get("source_domain_ref")
+        target = data.get("target_domain_ref")
+        if isinstance(source, str) and source not in domain_ids:
+            all_errors.append(f"{path}: source_domain_ref: unknown domain id '{source}'")
+        if isinstance(target, str) and target not in domain_ids:
+            all_errors.append(f"{path}: target_domain_ref: unknown domain id '{target}'")
 
     if all_errors:
-        print(f"Validation failed for {len(all_errors)} issue(s) across {len(files)} file(s).")
+        print(
+            "Validation failed for "
+            f"{len(all_errors)} issue(s) across {len(domain_paths)} domain and {len(relation_paths)} relation file(s)."
+        )
         for line in all_errors:
             print(f" - {line}")
         return 1
 
-    print(f"Validation passed for {len(files)} domain file(s).")
+    print(
+        "Validation passed for "
+        f"{len(domain_paths)} domain file(s) and {len(relation_paths)} relation file(s)."
+    )
     return 0
 
 

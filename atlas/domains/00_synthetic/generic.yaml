@@ -1,5 +1,8 @@
+id: synthetic-generic
 domain: synthetic_generic
 system_type: abstract_process
+entropy_quantity_kind: proxy_other
+epistemic_status: heuristic
 scope:
   applies_to: "Placeholder synthetic systems for tooling validation"
   does_not_apply: "Empirical scientific claims or real-world calibration"
