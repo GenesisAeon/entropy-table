@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/atlas/schema/relation.schema.json",
+  "title": "Entropy Atlas Relation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "source_domain_ref",
+    "target_domain_ref",
+    "relation_type",
+    "what_is_preserved",
+    "what_is_lost",
+    "conditions",
+    "expected_effect_on_entropy_measure",
+    "must_fail_tests",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "source_domain_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "target_domain_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "relation_type": {
+      "type": "string",
+      "enum": [
+        "approximation",
+        "coarse_graining",
+        "regime_transition",
+        "limit_mapping",
+        "other"
+      ]
+    },
+    "what_is_preserved": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "what_is_lost": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "conditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text"
+      ],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["string", "number", "boolean"]
+          }
+        }
+      }
+    },
+    "expected_effect_on_entropy_measure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "direction",
+        "description"
+      ],
+      "properties": {
+        "direction": {
+          "type": "string",
+          "enum": ["increase", "decrease", "invariant", "context_dependent"]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "must_fail_tests": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "review", "stable"]
+    }
+  }
+}

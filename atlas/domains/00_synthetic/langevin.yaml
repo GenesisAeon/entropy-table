@@ -1,5 +1,8 @@
+id: synthetic-langevin
 domain: synthetic_langevin
 system_type: stochastic_differential
+entropy_quantity_kind: production_rate
+epistemic_status: numerical
 scope:
   applies_to: "Noisy mesoscopic trajectories in synthetic benchmark systems"
   does_not_apply: "Deterministic Hamiltonian systems without stochastic forcing"

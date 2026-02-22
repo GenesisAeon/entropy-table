@@ -1,0 +1,21 @@
+id: underdamped-to-overdamped
+source_domain_ref: synthetic-langevin
+target_domain_ref: synthetic-generic
+relation_type: approximation
+what_is_preserved:
+  - "Entropy accounting sign convention"
+  - "Non-equilibrium driving interpretation"
+what_is_lost:
+  - "Fast inertial transients"
+  - "Momentum-resolved dissipation channels"
+conditions:
+  text: "Valid when inertial relaxation is much faster than observation timescale."
+  params:
+    separation_ratio_min: 10
+expected_effect_on_entropy_measure:
+  direction: decrease
+  description: "Estimated production rate smooths high-frequency spikes after eliminating fast modes."
+must_fail_tests:
+  - "missing_expected_effect_direction"
+citations: []
+status: draft

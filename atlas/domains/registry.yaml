@@ -1,4 +1,7 @@
 domains:
-  - 00_synthetic/langevin.yaml
-  - 00_synthetic/markov.yaml
-  - 00_synthetic/generic.yaml
+  - id: synthetic-langevin
+    path: 00_synthetic/langevin.yaml
+  - id: synthetic-markov-jump
+    path: 00_synthetic/markov.yaml
+  - id: synthetic-generic
+    path: 00_synthetic/generic.yaml

@@ -1,5 +1,8 @@
+id: synthetic-markov-jump
 domain: synthetic_markov_jump
 system_type: markov_jump_process
+entropy_quantity_kind: production_rate
+epistemic_status: theorem
 scope:
   applies_to: "Finite-state continuous-time Markov chains"
   does_not_apply: "Systems lacking identifiable transition rates"
