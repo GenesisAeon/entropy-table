@@ -1,0 +1,157 @@
+id: subsystem-langevin
+title: Synthetic Langevin Subsystem
+system_type:
+  primary: stochastic_thermodynamics
+  tags:
+  - overdamped-langevin
+  - markovian
+  notes: placeholder context
+entropy_quantity_kind: invalid_kind
+epistemic_status: numerical
+scope:
+  applies_to:
+  - synthetic benchmark particle
+  does_not_apply:
+  - quantum coherent regimes
+boundary:
+  closure_type: effectively_closed
+  closure_notes: Heat leakage is ignored over the selected short window.
+  exchange_channels:
+  - heat
+  - work
+  external_entities:
+  - id: thermal-bath
+    role: reservoir
+    notes: placeholder reservoir
+entropy_accounting:
+  storage_term:
+    symbol: S
+    latex: S
+    units: J/K
+    notes: placeholder
+  production_term:
+    symbol: Sigmadot
+    latex: \dot{\Sigma}
+    units: J/(K s)
+    notes: placeholder
+  flux_term:
+    symbol: Phidot
+    latex: \dot{\Phi}
+    units: J/(K s)
+    notes: placeholder
+  decomposition_terms:
+  - id: medium-part
+    name: Medium contribution
+    latex: \dot{\Sigma}_{m}
+    notes: placeholder
+    epistemic_status: heuristic
+  accounting_status: approximate
+entropy_definition:
+  symbol: S
+  latex: S = -k_B \sum_i p_i \ln p_i
+  units: J/K
+  assumptions:
+  - id: a1
+    statement: Local equilibrium proxy assumption.
+    epistemic_status: heuristic
+    citations:
+    - c1
+  zero_conditions:
+  - id: z1
+    statement: Entropy production proxy is zero at static equilibrium.
+    citations:
+    - c1
+operators:
+  triggers:
+  - id: tr1
+    name: shear-drive
+    definition: synthetic trigger
+    params:
+    - drive
+    observables:
+    - velocity
+    notes: placeholder
+    epistemic_status: numerical
+    citations:
+    - c1
+  dampers:
+  - id: da1
+    name: viscous-damping
+    definition: synthetic damper
+    params:
+    - gamma
+    observables:
+    - velocity
+    notes: placeholder
+    epistemic_status: empirical
+    citations:
+    - c1
+spectral:
+  method: stft
+  phi_semantics: power
+  phi_definition:
+    latex: \Phi(f)
+    notes: placeholder
+  bands:
+  - id: b-low
+    name: low
+    spec_type: range
+    value:
+    - 0.0
+    - 1.0
+    units: Hz
+    notes: placeholder
+parameter_bands:
+  beta:
+    id: pb-beta
+    name: beta
+    spec_type: range
+    value:
+    - 0.1
+    - 1.0
+    units: 1/J
+    notes: placeholder
+  theta:
+    id: pb-theta
+    name: theta
+    spec_type: point
+    value: 0.5
+    units: '1'
+    notes: placeholder
+  zeta:
+    id: pb-zeta
+    name: zeta
+    spec_type: categorical
+    value: medium
+    units: none
+    notes: placeholder
+must_fail_tests:
+- id: mf1
+  statement: Negative diffusion coefficient should invalidate model.
+  expected_outcome: reject
+  rationale: unphysical parameter
+  citations:
+  - c1
+  severity: hard
+- id: mf2
+  statement: Missing trajectory should fail estimator.
+  expected_outcome: reject
+  rationale: no observables
+  citations:
+  - c1
+  severity: soft
+limitations:
+- id: l1
+  statement: Placeholder model ignores long-memory effects.
+  citations:
+  - c1
+citations:
+- id: c1
+  type: note
+  ref: synthetic-reference-1
+  title: Placeholder reference
+  year: 2024
+  authors:
+  - Atlas Team
+status: draft
+synthetic: true

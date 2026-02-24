@@ -1,0 +1,25 @@
+id: coupling-proxy-to-sub
+source_domain_id: proxy-other
+target_domain_id: subsystem-langevin
+relation_type: coupling
+conditions:
+  text: Proxy signal drives subsystem trigger intensity.
+  params:
+    gain: 0.5
+preserved: [event-timing]
+lost: [unit-interpretability]
+expected_effect:
+  direction: increase
+  description: Added forcing tends to increase production proxy.
+must_fail_tests:
+  - id: mf1
+    statement: Negative gain below bound should fail coupling setup.
+    expected_outcome: reject
+    rationale: unstable simulated driver
+    citations: [c1]
+    severity: soft
+citations:
+  - id: c1
+    type: note
+    ref: synthetic-relation-ref-3
+status: stable

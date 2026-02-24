@@ -1,0 +1,85 @@
+id: proxy-other
+title: Synthetic Other Type Domain
+system_type:
+  primary: other
+  tags: [custom-proxy]
+  notes: demonstrates extensible typing
+entropy_quantity_kind: proxy_other
+epistemic_status: open_problem
+scope:
+  applies_to: [exploratory synthetic datasets]
+  does_not_apply: [validated physical systems]
+boundary:
+  closure_type: unknown
+  exchange_channels: [other]
+  external_entities:
+    - id: measurement-loop
+      role: measurement
+      notes: placeholder instrumentation
+entropy_accounting:
+  storage_term: {symbol: Sp, latex: "S_p", units: "arb", notes: placeholder}
+  production_term: {symbol: Pp, latex: "P_p", units: "arb/s", notes: placeholder}
+  flux_term: {symbol: Fp, latex: "F_p", units: "arb/s", notes: placeholder}
+  accounting_status: unknown
+entropy_definition:
+  symbol: Sp
+  latex: "S_p = f(x)"
+  units: arb
+  assumptions:
+    - id: a1
+      statement: Placeholder nonlinear map.
+      epistemic_status: open_problem
+      citations: [c1]
+  zero_conditions:
+    - id: z1
+      statement: Zero for null input.
+      citations: [c1]
+operators:
+  triggers:
+    - id: tr1
+      name: pulse
+      definition: synthetic perturbation
+      params: [amp]
+      observables: [signal]
+      notes: placeholder
+      epistemic_status: heuristic
+      citations: [c1]
+  dampers:
+    - id: da1
+      name: clip
+      definition: synthetic limiter
+      params: [limit]
+      observables: [signal]
+      notes: placeholder
+      epistemic_status: heuristic
+      citations: [c1]
+spectral:
+  method: none
+  phi_semantics: none
+  phi_definition:
+    latex: "\\Phi = 0"
+    notes: placeholder
+  bands: []
+parameter_bands:
+  beta: {id: pb-beta, name: beta, spec_type: none, value: null, units: none, notes: placeholder}
+  theta: {id: pb-theta, name: theta, spec_type: none, value: null, units: none, notes: placeholder}
+  zeta: {id: pb-zeta, name: zeta, spec_type: none, value: null, units: none, notes: placeholder}
+must_fail_tests:
+  - id: mf1
+    statement: Undefined mapping should fail rendering.
+    expected_outcome: reject
+    rationale: missing model map
+    citations: [c1]
+    severity: hard
+  - id: mf2
+    statement: NaN parameter should fail validation.
+    expected_outcome: reject
+    rationale: invalid scalar
+    citations: [c1]
+    severity: soft
+citations:
+  - id: c1
+    type: note
+    ref: synthetic-reference-3
+status: draft
+synthetic: true

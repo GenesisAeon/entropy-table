@@ -1,0 +1,27 @@
+id: coarsegrain-super-to-proxy
+source_domain_id: supersystem-network
+target_domain_id: proxy-other
+relation_type: coarse_graining
+conditions:
+  text: Collapse network observables into scalar proxy.
+  params:
+    bins: 3
+preserved: [rank-information]
+lost: [topology]
+expected_effect:
+  direction: decrease
+  description: Coarse graining removes detailed structure.
+must_fail_tests:
+  - id: mf1
+    statement: Zero bins should fail coarse graining.
+    expected_outcome: reject
+    rationale: invalid discretization
+    citations: [c1]
+    severity: hard
+citations:
+  - id: c1
+    type: note
+    ref: synthetic-relation-ref-2
+status: review
+context:
+  tags: [discretization]

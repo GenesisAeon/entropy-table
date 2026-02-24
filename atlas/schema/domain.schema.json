@@ -1,226 +1,322 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.org/atlas/schema/domain.schema.json",
-  "title": "Entropy Atlas Domain",
+  "title": "DomainSpec",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "id",
-    "domain",
+    "title",
     "system_type",
     "entropy_quantity_kind",
     "epistemic_status",
     "scope",
-    "entropy_proxy",
-    "spectral_bands",
+    "boundary",
+    "entropy_accounting",
+    "entropy_definition",
     "operators",
-    "bands",
+    "spectral",
+    "parameter_bands",
     "must_fail_tests",
     "citations",
     "status"
   ],
   "properties": {
-    "id": {
-      "type": "string",
-      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
-    },
-    "domain": {
-      "type": "string",
-      "minLength": 1
-    },
+    "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "title": {"type": "string", "minLength": 1},
     "system_type": {
-      "type": "string",
-      "minLength": 1
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary"],
+      "properties": {
+        "primary": {
+          "type": "string",
+          "enum": [
+            "stochastic_thermodynamics",
+            "markov_network_thermodynamics",
+            "generic_structural_thermodynamics",
+            "quantum_open_systems",
+            "boundary_driven_transport",
+            "biochemical_networks",
+            "computational_proxy",
+            "other"
+          ]
+        },
+        "tags": {
+          "type": "array",
+          "items": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+          "default": []
+        },
+        "notes": {"type": "string"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"primary": {"const": "other"}}, "required": ["primary"]},
+          "then": {
+            "required": ["tags"],
+            "properties": {"tags": {"minItems": 1}}
+          }
+        }
+      ]
     },
     "entropy_quantity_kind": {
       "type": "string",
-      "enum": [
-        "production_rate",
-        "entropy_flux",
-        "state_entropy",
-        "budget_entropy",
-        "proxy_other"
-      ]
+      "enum": ["production_rate", "entropy_flux", "state_entropy", "budget_entropy", "proxy_other"]
     },
     "epistemic_status": {
       "type": "string",
-      "enum": [
-        "theorem",
-        "empirical",
-        "numerical",
-        "heuristic",
-        "disputed",
-        "open_problem"
-      ]
+      "enum": ["theorem", "empirical", "numerical", "heuristic", "disputed", "open_problem"]
     },
     "scope": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "applies_to",
-        "does_not_apply"
-      ],
+      "required": ["applies_to", "does_not_apply"],
       "properties": {
-        "applies_to": {
-          "type": "string",
-          "minLength": 1
-        },
-        "does_not_apply": {
-          "type": "string",
-          "minLength": 1
+        "applies_to": {"type": "array", "items": {"type": "string"}},
+        "does_not_apply": {"type": "array", "items": {"type": "string"}
         }
       }
     },
-    "entropy_proxy": {
+    "boundary": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "symbol",
-        "definition_latex",
-        "units",
-        "estimation_method"
-      ],
+      "required": ["closure_type", "exchange_channels", "external_entities"],
       "properties": {
-        "symbol": {
-          "type": "string",
-          "minLength": 1
-        },
-        "definition_latex": {
-          "type": "string",
-          "minLength": 1
-        },
-        "units": {
-          "type": "string",
-          "minLength": 1
-        },
-        "estimation_method": {
-          "type": "string",
-          "minLength": 1
-        }
-      }
-    },
-    "spectral_bands": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "method",
-        "phi_definition_latex",
-        "bands"
-      ],
-      "properties": {
-        "method": {
-          "type": "string",
-          "minLength": 1
-        },
-        "phi_definition_latex": {
-          "type": "string",
-          "minLength": 1
-        },
-        "bands": {
+        "closure_type": {"type": "string", "enum": ["closed", "effectively_closed", "open", "unknown"]},
+        "closure_notes": {"type": "string"},
+        "exchange_channels": {
           "type": "array",
-          "minItems": 1,
+          "items": {"type": "string", "enum": ["heat", "work", "matter", "radiation", "information", "chemical", "other"]}
+        },
+        "external_entities": {
+          "type": "array",
           "items": {
-            "type": "string",
-            "minLength": 1
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "role", "notes"],
+            "properties": {
+              "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+              "role": {"type": "string", "enum": ["reservoir", "driver", "environment", "measurement"]},
+              "notes": {"type": "string"}
+            }
           }
         }
+      }
+    },
+    "entropy_accounting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["storage_term", "production_term", "flux_term", "accounting_status"],
+      "properties": {
+        "storage_term": {"$ref": "#/$defs/accountingTerm"},
+        "production_term": {"$ref": "#/$defs/accountingTerm"},
+        "flux_term": {"$ref": "#/$defs/accountingTerm"},
+        "decomposition_terms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "name", "latex", "notes", "epistemic_status"],
+            "properties": {
+              "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+              "name": {"type": "string"},
+              "latex": {"type": "string"},
+              "notes": {"type": "string"},
+              "epistemic_status": {
+                "type": "string",
+                "enum": ["theorem", "empirical", "numerical", "heuristic", "disputed", "open_problem"]
+              }
+            }
+          }
+        },
+        "accounting_status": {"type": "string", "enum": ["exact", "approximate", "proxy", "unknown"]}
+      }
+    },
+    "entropy_definition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["symbol", "latex", "units", "assumptions", "zero_conditions"],
+      "properties": {
+        "symbol": {"type": "string"},
+        "latex": {"type": "string"},
+        "units": {"type": "string"},
+        "assumptions": {"type": "array", "items": {"$ref": "#/$defs/assumptionSpec"}},
+        "zero_conditions": {"type": "array", "items": {"$ref": "#/$defs/zeroConditionSpec"}}
       }
     },
     "operators": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "triggers",
-        "dampers"
-      ],
+      "required": ["triggers", "dampers"],
       "properties": {
-        "triggers": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "dampers": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
-        }
+        "triggers": {"type": "array", "items": {"$ref": "#/$defs/operatorSpec"}},
+        "dampers": {"type": "array", "items": {"$ref": "#/$defs/operatorSpec"}}
       }
     },
-    "bands": {
+    "spectral": {
       "type": "object",
-      "additionalProperties": true,
-      "required": [
-        "beta",
-        "theta"
-      ],
+      "additionalProperties": false,
+      "required": ["method", "phi_semantics", "phi_definition", "bands"],
       "properties": {
-        "beta": {
-          "$ref": "#/$defs/bandSpec"
+        "method": {"type": "string", "enum": ["none", "stft", "wavelet", "bandpass"]},
+        "phi_semantics": {"type": "string", "enum": ["energy", "power", "amplitude", "none"]},
+        "phi_definition": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["latex", "notes"],
+          "properties": {
+            "latex": {"type": "string"},
+            "notes": {"type": "string"}
+          }
         },
-        "theta": {
-          "$ref": "#/$defs/bandSpec"
+        "bands": {"type": "array", "items": {"$ref": "#/$defs/bandSpec"}}
+      }
+    },
+    "parameter_bands": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["beta", "theta", "zeta"],
+      "properties": {
+        "beta": {"$ref": "#/$defs/bandSpec"},
+        "theta": {"$ref": "#/$defs/bandSpec"},
+        "zeta": {"$ref": "#/$defs/bandSpec"}
+      }
+    },
+    "must_fail_tests": {"type": "array", "minItems": 2, "items": {"$ref": "#/$defs/testSpec"}},
+    "limitations": {"type": "array", "items": {"$ref": "#/$defs/limitationSpec"}},
+    "citations": {"type": "array", "items": {"$ref": "#/$defs/citationSpec"}, "minItems": 1},
+    "status": {"type": "string", "enum": ["draft", "review", "stable"]},
+    "synthetic": {"type": "boolean"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "boundary": {
+            "type": "object",
+            "properties": {"closure_type": {"const": "effectively_closed"}},
+            "required": ["closure_type"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "boundary": {
+            "required": ["closure_notes"],
+            "properties": {"closure_notes": {"minLength": 1}}
+          }
         }
       }
     },
-    "must_fail_tests": {
-      "type": "array",
-      "minItems": 2,
-      "items": {
-        "type": "string",
-        "minLength": 1
+    {
+      "if": {
+        "not": {
+          "properties": {"synthetic": {"const": true}},
+          "required": ["synthetic"]
+        }
+      },
+      "then": {
+        "properties": {
+          "citations": {"minItems": 1}
+        }
       }
-    },
-    "citations": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
-    },
-    "status": {
-      "type": "string",
-      "enum": [
-        "draft",
-        "review",
-        "stable"
-      ]
     }
-  },
+  ],
   "$defs": {
+    "accountingTerm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["symbol", "latex", "units", "notes"],
+      "properties": {
+        "symbol": {"type": "string"},
+        "latex": {"type": "string"},
+        "units": {"type": "string"},
+        "notes": {"type": "string"}
+      }
+    },
+    "operatorSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "definition", "params", "observables", "notes", "epistemic_status", "citations"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "name": {"type": "string"},
+        "definition": {"type": "string"},
+        "params": {"type": "array", "items": {"type": "string"}},
+        "observables": {"type": "array", "items": {"type": "string"}},
+        "notes": {"type": "string"},
+        "epistemic_status": {"type": "string", "enum": ["theorem", "empirical", "numerical", "heuristic", "disputed", "open_problem"]},
+        "citations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
     "bandSpec": {
       "type": "object",
       "additionalProperties": false,
-      "oneOf": [
-        {
-          "required": [
-            "range"
-          ]
-        },
-        {
-          "required": [
-            "distribution"
-          ]
-        }
-      ],
+      "required": ["id", "name", "spec_type", "value", "units", "notes"],
       "properties": {
-        "range": {
-          "type": "array",
-          "minItems": 2,
-          "maxItems": 2,
-          "items": {
-            "type": "number"
-          }
-        },
-        "distribution": {
-          "type": "string",
-          "minLength": 1
-        }
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "name": {"type": "string"},
+        "spec_type": {"type": "string", "enum": ["range", "point", "distribution", "categorical", "none"]},
+        "value": {},
+        "units": {"type": "string"},
+        "notes": {"type": "string"}
+      }
+    },
+    "testSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "statement", "expected_outcome", "rationale", "citations", "severity"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "statement": {"type": "string"},
+        "expected_outcome": {"type": "string"},
+        "rationale": {"type": "string"},
+        "citations": {"type": "array", "items": {"type": "string"}},
+        "severity": {"type": "string", "enum": ["hard", "soft"]}
+      }
+    },
+    "assumptionSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "statement", "epistemic_status", "citations"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "statement": {"type": "string"},
+        "epistemic_status": {"type": "string", "enum": ["theorem", "empirical", "numerical", "heuristic", "disputed", "open_problem"]},
+        "citations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "zeroConditionSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "statement", "citations"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "statement": {"type": "string"},
+        "citations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "limitationSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "statement", "citations"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "statement": {"type": "string"},
+        "citations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "citationSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "ref"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "type": {"type": "string", "enum": ["doi", "url", "book", "report", "note", "other"]},
+        "ref": {"type": "string"},
+        "title": {"type": "string"},
+        "year": {"type": "integer"},
+        "authors": {"type": "array", "items": {"type": "string"}}
       }
     }
   }

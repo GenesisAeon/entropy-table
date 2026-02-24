@@ -1,115 +1,111 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.org/atlas/schema/relation.schema.json",
-  "title": "Entropy Atlas Relation",
+  "title": "RelationSpec",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "id",
-    "source_domain_ref",
-    "target_domain_ref",
+    "source_domain_id",
+    "target_domain_id",
     "relation_type",
-    "what_is_preserved",
-    "what_is_lost",
     "conditions",
-    "expected_effect_on_entropy_measure",
+    "preserved",
+    "lost",
+    "expected_effect",
     "must_fail_tests",
+    "citations",
     "status"
   ],
   "properties": {
-    "id": {
-      "type": "string",
-      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
-    },
-    "source_domain_ref": {
-      "type": "string",
-      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
-    },
-    "target_domain_ref": {
-      "type": "string",
-      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
-    },
+    "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "source_domain_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "target_domain_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
     "relation_type": {
       "type": "string",
       "enum": [
-        "approximation",
+        "approximation_limit",
         "coarse_graining",
-        "regime_transition",
-        "limit_mapping",
-        "other"
+        "regime_shift",
+        "model_reduction",
+        "measurement_mapping",
+        "equivalence_mapping",
+        "composition",
+        "coupling",
+        "aggregation_rule"
       ]
-    },
-    "what_is_preserved": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
-    },
-    "what_is_lost": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
     },
     "conditions": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "text"
-      ],
+      "required": ["text", "params"],
       "properties": {
-        "text": {
-          "type": "string",
-          "minLength": 1
-        },
+        "text": {"type": "string"},
         "params": {
           "type": "object",
           "additionalProperties": {
-            "type": ["string", "number", "boolean"]
+            "type": ["string", "number", "integer", "boolean", "null"]
           }
         }
       }
     },
-    "expected_effect_on_entropy_measure": {
+    "preserved": {"type": "array", "items": {"type": "string"}},
+    "lost": {"type": "array", "items": {"type": "string"}},
+    "expected_effect": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "direction",
-        "description"
-      ],
+      "required": ["direction", "description"],
       "properties": {
-        "direction": {
-          "type": "string",
-          "enum": ["increase", "decrease", "invariant", "context_dependent"]
+        "direction": {"type": "string", "enum": ["increase", "decrease", "context_dependent", "unknown"]},
+        "inequality": {"type": "string"},
+        "description": {"type": "string"}
+      }
+    },
+    "must_fail_tests": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/testSpec"}},
+    "citations": {"type": "array", "items": {"$ref": "#/$defs/citationSpec"}, "minItems": 1},
+    "status": {"type": "string", "enum": ["draft", "review", "stable"]},
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tags": {
+          "type": "array",
+          "items": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"}
         },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        }
+        "notes": {"type": "string"}
       }
     },
-    "must_fail_tests": {
+    "parts": {
       "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "string",
-        "minLength": 1
+      "items": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"}
+    }
+  },
+  "$defs": {
+    "testSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "statement", "expected_outcome", "rationale", "citations", "severity"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "statement": {"type": "string"},
+        "expected_outcome": {"type": "string"},
+        "rationale": {"type": "string"},
+        "citations": {"type": "array", "items": {"type": "string"}},
+        "severity": {"type": "string", "enum": ["hard", "soft"]}
       }
     },
-    "citations": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1
+    "citationSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "ref"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "type": {"type": "string", "enum": ["doi", "url", "book", "report", "note", "other"]},
+        "ref": {"type": "string"},
+        "title": {"type": "string"},
+        "year": {"type": "integer"},
+        "authors": {"type": "array", "items": {"type": "string"}}
       }
-    },
-    "status": {
-      "type": "string",
-      "enum": ["draft", "review", "stable"]
     }
   }
 }
