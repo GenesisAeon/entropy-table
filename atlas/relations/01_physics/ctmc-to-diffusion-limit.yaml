@@ -1,6 +1,6 @@
 id: ctmc-to-diffusion-limit
 source_domain_id: ctmc-schnakenberg
-target_domain_id: subsystem-langevin
+target_domain_id: overdamped-langevin-st
 relation_type: approximation_limit
 conditions:
   text: Take lattice spacing dx -> 0 and time-step scaling so jump moments converge to drift and diffusion coefficients (Kramers-Moyal/Fokker-Planck limit), with smooth fields and local detailed-balance-consistent rate ratios.
