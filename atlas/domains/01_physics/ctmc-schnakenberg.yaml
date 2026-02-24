@@ -1,0 +1,201 @@
+id: ctmc-schnakenberg
+title: Schnakenberg Entropy Production in Continuous-Time Markov Networks
+system_type:
+  primary: markov_network_thermodynamics
+  tags: [ctmc, schnakenberg, ness, cycle-affinity]
+  notes: Finite-state jump-process thermodynamics with cycle-current decomposition.
+entropy_quantity_kind: production_rate
+epistemic_status: theorem
+scope:
+  applies_to:
+    - Continuous-time Markov jump processes with well-defined forward and reverse rates.
+    - Nonequilibrium steady states and time-dependent ensembles on discrete state networks.
+  does_not_apply:
+    - Deterministic Hamiltonian dynamics without stochastic coarse-graining.
+    - Quantum-coherent transport requiring noncommutative entropy-production definitions.
+boundary:
+  closure_type: effectively_closed
+  closure_notes: Reservoir driving (chemical, thermal, chemostatted forcing) is encoded in transition-rate asymmetries; unresolved microscopic degrees of freedom are already coarse-grained into effective rates.
+  exchange_channels: [heat, matter, chemical, information]
+  external_entities:
+    - id: chemostatted-reservoirs
+      role: reservoir
+      notes: Reservoir affinities enter local detailed-balance ratios for transition rates.
+    - id: nonequilibrium-driving
+      role: driver
+      notes: Nonconservative forcing appears as nonzero cycle affinities.
+entropy_accounting:
+  storage_term:
+    symbol: dSsysdt
+    latex: "\\frac{dS_{\\mathrm{sys}}}{dt} = -\\sum_i \\dot p_i \\ln p_i"
+    units: "k_B/s"
+    notes: Shannon entropy rate of the instantaneous state distribution.
+  production_term:
+    symbol: sigma
+    latex: "\\sigma = \\frac{1}{2}\\sum_{i,j} J_{ij} \\ln \\frac{p_i w_{ij}}{p_j w_{ji}} \\ge 0"
+    units: "k_B/s"
+    notes: Total irreversible entropy production rate in network stochastic thermodynamics.
+  flux_term:
+    symbol: dsmeddt
+    latex: "\\dot S_{\\mathrm{med}} = \\frac{1}{2}\\sum_{i,j} J_{ij} \\ln \\frac{w_{ij}}{w_{ji}}"
+    units: "k_B/s"
+    notes: Medium (environment) entropy flow; convention here gives dSsys/dt = sigma - dot S_med.
+  decomposition_terms:
+    - id: housekeeping-ep
+      name: Housekeeping entropy production
+      latex: "\\dot\\Sigma_{\\mathrm{hk}}"
+      notes: In NESS decompositions, housekeeping part sustains nonequilibrium currents under fixed affinities.
+      epistemic_status: theorem
+    - id: excess-ep
+      name: Excess entropy production
+      latex: "\\dot\\Sigma_{\\mathrm{ex}}"
+      notes: Transient contribution associated with relaxation under protocol changes.
+      epistemic_status: theorem
+  accounting_status: exact
+entropy_definition:
+  symbol: sigma
+  latex: "\\sigma(t)=\\frac{1}{2}\\sum_{i,j}J_{ij}(t)\\ln\\!\\frac{p_i(t)w_{ij}(t)}{p_j(t)w_{ji}(t)},\\; J_{ij}=p_iw_{ij}-p_jw_{ji};\\;\\text{at NESS this is time-independent.}"
+  units: "k_B/s"
+  assumptions:
+    - id: markov-jump-assumption
+      statement: Dynamics is a CTMC with normalized probabilities and finite escape rates.
+      epistemic_status: theorem
+      citations: [schnakenberg1976, lebowitzspohn1999]
+    - id: microreversibility-assumption
+      statement: Reverse transitions exist on edges used for entropy-production expressions (w_ij > 0 implies w_ji > 0).
+      epistemic_status: theorem
+      citations: [seifert2012]
+  zero_conditions:
+    - id: detailed-balance-zero
+      statement: If detailed balance holds (p_i^* w_ij = p_j^* w_ji for all i,j), all cycle affinities and sigma vanish.
+      citations: [schnakenberg1976, seifert2012]
+    - id: no-current-zero
+      statement: Instantaneously, sigma = 0 when every edge current J_ij is zero.
+      citations: [lebowitzspohn1999]
+operators:
+  triggers:
+    - id: cycle-affinity-injection
+      name: cycle-affinity-injection
+      definition: Increase nonconservative forcing so independent cycle affinity sums become nonzero.
+      params: [cycle-affinity, chemical-potential-difference, bias-field]
+      observables: [cycle-current, entropy-production-rate]
+      notes: Nonzero affinity-current products raise irreversible dissipation.
+      epistemic_status: theorem
+      citations: [schnakenberg1976, seifert2012]
+    - id: boundary-reservoir-bias
+      name: boundary-reservoir-bias
+      definition: Impose unequal reservoir activities/fugacities encoded in boundary transition rates.
+      params: [left-right-bias, reservoir-activity]
+      observables: [net-flux, entropy-production-rate]
+      notes: Boundary-driven Markov transport breaks detailed balance in the bulk.
+      epistemic_status: empirical
+      citations: [lebowitzspohn1999]
+  dampers:
+    - id: detailed-balance-restoration
+      name: detailed-balance-restoration
+      definition: Tune rates toward symmetric local detailed-balance ratios so cycle affinities approach zero.
+      params: [rate-ratio-control, affinity-quench]
+      observables: [cycle-affinity, entropy-production-rate]
+      notes: As affinities vanish, network EP collapses to zero at equilibrium.
+      epistemic_status: theorem
+      citations: [schnakenberg1976]
+    - id: timescale-homogenization
+      name: timescale-homogenization
+      definition: Increase symmetric transition activity at fixed antisymmetric bias to reduce occupancy bottlenecks and net currents.
+      params: [symmetric-rate-scale]
+      observables: [edge-current, entropy-production-rate]
+      notes: For fixed affinity structure, current suppression reduces sigma.
+      epistemic_status: heuristic
+      citations: [seifert2012]
+    - id: observational-coarse-graining
+      name: observational-coarse-graining
+      definition: Lump microstates into mesostates when only partial observables are retained.
+      params: [lumping-map, hidden-state-fraction]
+      observables: [apparent-entropy-production]
+      notes: Hidden currents lower apparent EP relative to true EP.
+      epistemic_status: theorem
+      citations: [esposito2012]
+spectral:
+  method: none
+  phi_semantics: none
+  phi_definition:
+    latex: "\\varphi = \\varnothing"
+    notes: No spectral representation is intrinsic to this domain specification.
+  bands: []
+parameter_bands:
+  beta:
+    id: beta-normalized-ep
+    name: normalized-ep-rate
+    spec_type: distribution
+    value: "Distribution of sigma/sigma_ref over trajectories or steady-state parameter sweeps."
+    units: "1"
+    notes: sigma_ref can be chosen as an experimentally or numerically defined baseline.
+  theta:
+    id: theta-driving-coupling
+    name: driving-coupling-strength
+    spec_type: range
+    value: [0.0, 1.0]
+    units: "1"
+    notes: Placeholder nondimensional coupling from near-equilibrium (0) to strongly driven (1).
+  zeta:
+    id: zeta-coarse-graining
+    name: coarse-graining-severity
+    spec_type: range
+    value: [0.0, 1.0]
+    units: "1"
+    notes: 0 means full microstate resolution; 1 means maximally lumped observations.
+must_fail_tests:
+  - id: detailed-balance-implies-zero-ep
+    statement: For any finite CTMC satisfying detailed balance with stationary p*, computed sigma at p* must be exactly zero.
+    expected_outcome: pass-if-zero-otherwise-reject
+    rationale: Positive EP at detailed balance contradicts Schnakenberg cycle-affinity theory.
+    citations: [schnakenberg1976, seifert2012]
+    severity: hard
+  - id: lumping-cannot-increase-ep
+    statement: In a model with hidden fast states, the inferred mesoscopic EP from lumped trajectories exceeds microscopic EP.
+    expected_outcome: reject
+    rationale: Apparent EP should not exceed true EP under proper coarse-graining assumptions.
+    citations: [esposito2012, polettini2014]
+    severity: hard
+  - id: criticality-peak-universality
+    statement: The model asserts a universal EP peak at every critical point in finite Markov networks.
+    expected_outcome: reject
+    rationale: No theorem guarantees universal critical-point EP maxima across all Markov models.
+    citations: [seifert2012]
+    severity: soft
+limitations:
+  - id: nonmarkovian-memory-limitation
+    statement: Semi-Markov and strongly non-Markovian hidden dynamics require modified entropy-production estimators.
+    citations: [esposito2012]
+citations:
+  - id: schnakenberg1976
+    type: doi
+    ref: "10.1103/RevModPhys.48.571"
+    title: Network theory of microscopic and macroscopic behavior of master equation systems
+    year: 1976
+    authors: [J. Schnakenberg]
+  - id: lebowitzspohn1999
+    type: doi
+    ref: "10.1023/A:1004589714161"
+    title: A Gallavotti-Cohen-Type Symmetry in the Large Deviation Functional for Stochastic Dynamics
+    year: 1999
+    authors: [J. L. Lebowitz, H. Spohn]
+  - id: seifert2012
+    type: doi
+    ref: "10.1088/0034-4885/75/12/126001"
+    title: Stochastic thermodynamics, fluctuation theorems and molecular machines
+    year: 2012
+    authors: [U. Seifert]
+  - id: esposito2012
+    type: doi
+    ref: "10.1103/PhysRevE.85.031117"
+    title: Stochastic thermodynamics under coarse graining
+    year: 2012
+    authors: [M. Esposito]
+  - id: polettini2014
+    type: doi
+    ref: "10.1103/PhysRevE.89.052119"
+    title: Effective thermodynamics for a marginal observer
+    year: 2014
+    authors: [M. Polettini, M. Esposito]
+status: review

@@ -1,0 +1,57 @@
+id: ctmc-coarsegraining-hidden-variables
+source_domain_id: ctmc-schnakenberg
+target_domain_id: proxy-other
+relation_type: coarse_graining
+conditions:
+  text: Microstate CTMC trajectories are mapped to mesostates by a non-invertible lumping map, leaving hidden transitions unobserved while inferred dynamics is treated as an effective Markov/HMM process.
+  params:
+    lumping: non_invertible
+    hidden_variables: true
+    markov_assumption_mesostate: conditional
+preserved:
+  - detectable time-irreversibility in observed trajectories
+  - lower-bound information on nonequilibrium dissipation under suitable estimators
+lost:
+  - exact microscopic cycle affinities
+  - full housekeeping versus excess decomposition
+  - hidden-current contributions to true entropy production
+expected_effect:
+  direction: decrease
+  inequality: apparent-ep <= true-ep
+  description: Under standard coarse-graining assumptions, mesoscopic apparent EP underestimates or equals microscopic EP; equality requires no hidden irreversibility.
+must_fail_tests:
+  - id: false-equilibrium-from-lumping
+    statement: A coarse-grained two-state projection with vanishing observed current is interpreted as microscopic equilibrium despite hidden driven cycles.
+    expected_outcome: reject
+    rationale: Hidden cycles can sustain positive true EP even when apparent mesoscopic EP is near zero.
+    citations: [esposito2012, polettini2014]
+    severity: hard
+  - id: apparent-exceeds-true
+    statement: Report apparent EP from a valid lumped observer that is strictly larger than the exactly computed microscopic EP in the same stationary regime.
+    expected_outcome: reject
+    rationale: Such a claim violates coarse-graining monotonicity results for entropy production under stated assumptions.
+    citations: [esposito2012]
+    severity: hard
+citations:
+  - id: esposito2012
+    type: doi
+    ref: "10.1103/PhysRevE.85.031117"
+    title: Stochastic thermodynamics under coarse graining
+    year: 2012
+    authors: [M. Esposito]
+  - id: polettini2014
+    type: doi
+    ref: "10.1103/PhysRevE.89.052119"
+    title: Effective thermodynamics for a marginal observer
+    year: 2014
+    authors: [M. Polettini, M. Esposito]
+  - id: kawaguchi2013
+    type: doi
+    ref: "10.1103/PhysRevLett.110.090601"
+    title: Fluctuation theorem for hidden entropy production
+    year: 2013
+    authors: [K. Kawaguchi, Y. Nakayama]
+status: review
+context:
+  tags: [coarse-graining, hidden-variables, apparent-entropy-production]
+  notes: Inequality is assumption-sensitive; non-Markov coarse-grained dynamics may require specialized estimators.

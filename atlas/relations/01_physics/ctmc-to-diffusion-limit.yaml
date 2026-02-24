@@ -1,0 +1,53 @@
+id: ctmc-to-diffusion-limit
+source_domain_id: ctmc-schnakenberg
+target_domain_id: subsystem-langevin
+relation_type: approximation_limit
+conditions:
+  text: Take lattice spacing dx -> 0 and time-step scaling so jump moments converge to drift and diffusion coefficients (Kramers-Moyal/Fokker-Planck limit), with smooth fields and local detailed-balance-consistent rate ratios.
+  params:
+    dx_limit: 0
+    rate_scaling: diffusive
+    smooth_coefficients: true
+    local_detailed_balance: true
+preserved:
+  - positivity of total entropy production
+  - near-equilibrium fluctuation symmetry structure
+  - continuity-equation form for probability evolution
+lost:
+  - discrete cycle-topology resolution
+  - finite-state jump-event statistics
+  - exact edgewise affinity-current decomposition
+expected_effect:
+  direction: context_dependent
+  inequality: "sigma_ctmc -> sigma_diffusion as dx -> 0 under regularity assumptions; outside this limit either side may deviate due to singular corrections."
+  description: Diffusion-limit mapping is asymptotically consistent but can miss finite-spacing or anomalous contributions when assumptions fail.
+must_fail_tests:
+  - id: inhomogeneous-temperature-anomaly
+    statement: Apply naive overdamped diffusion-limit EP formula to a CTMC approximation with spatially varying temperature/friction and conclude full EP is captured without correction.
+    expected_outcome: reject
+    rationale: Eliminating fast variables in inhomogeneous media can produce anomalous EP not recovered by naive overdamped formulas.
+    citations: [celani2012]
+    severity: hard
+citations:
+  - id: gardiner2009
+    type: book
+    ref: "C. W. Gardiner, Stochastic Methods, 4th ed., Springer"
+    title: Stochastic Methods
+    year: 2009
+    authors: [C. W. Gardiner]
+  - id: vankampen2007
+    type: book
+    ref: "N. G. van Kampen, Stochastic Processes in Physics and Chemistry, 3rd ed., North-Holland"
+    title: Stochastic Processes in Physics and Chemistry
+    year: 2007
+    authors: [N. G. van Kampen]
+  - id: celani2012
+    type: doi
+    ref: "10.1103/PhysRevLett.109.260603"
+    title: Anomalous Thermodynamics at the Microscale
+    year: 2012
+    authors: [A. Celani, S. Bo, R. Eichhorn, E. Aurell]
+status: review
+context:
+  tags: [ctmc, diffusion-limit, fokker-planck, overdamped-langevin]
+  notes: Relation is asymptotic rather than exact at finite discretization.
