@@ -1,0 +1,217 @@
+id: underdamped-langevin-st
+title: Underdamped Langevin — Stochastic Thermodynamics
+system_type:
+  primary: stochastic_thermodynamics
+  tags: [underdamped-langevin, phase-space, markovian, thermal-bath, seifert]
+  notes: Phase-space Langevin dynamics with explicit momentum and entropy production from path irreversibility under local detailed balance.
+entropy_quantity_kind: production_rate
+epistemic_status: theorem
+scope:
+  applies_to:
+    - Underdamped Itô or Stratonovich Langevin dynamics for (x,v) in contact with thermal reservoirs.
+    - Kramers/Fokker-Planck descriptions where odd (velocity/momentum) variables are treated with correct time-reversal parity.
+    - Stochastic-thermodynamic accounting of heat/work and trajectory-level entropy production.
+  does_not_apply:
+    - Strongly non-Markovian generalized Langevin baths not reducible to Markovian embeddings.
+    - Blind overdamped reductions when inertia or odd-variable parity effects are thermodynamically relevant.
+    - Strongly nonisothermal coarse-graining without anomalous entropy-production corrections.
+boundary:
+  closure_type: effectively_closed
+  closure_notes: Coarse-grained bath DOF are represented by friction and noise; explicit momentum variable retained; heat is identified from friction/noise energetics while work enters through protocol and force terms.
+  exchange_channels: [heat, work, information]
+  external_entities:
+    - id: thermal-bath
+      role: reservoir
+      notes: Thermal reservoir enforces fluctuation-dissipation structure for damping and noise.
+    - id: external-protocol
+      role: driver
+      notes: Time-dependent forcing/protocols inject work and drive nonequilibrium currents.
+    - id: measurement-apparatus
+      role: measurement
+      notes: Optional feedback channel contributes information terms in generalized second-law balances.
+entropy_accounting:
+  storage_term:
+    symbol: dSsysdt
+    latex: "\\frac{dS_{\\mathrm{sys}}}{dt} = -\\int \\partial_t p(x,v,t) \\ln p(x,v,t)\\,dx\\,dv"
+    units: "k_B/s"
+    notes: Shannon entropy rate of the phase-space density.
+  production_term:
+    symbol: sigma
+    latex: "\\sigma = \\left\\langle \\ln \\frac{\\mathcal{P}[x(\\cdot),v(\\cdot)]}{\\mathcal{P}^{\\dagger}[x^{\\dagger}(\\cdot),-v^{\\dagger}(\\cdot)]} \\right\\rangle / t \\ge 0"
+    units: "k_B/s"
+    notes: Total entropy production from forward/backward path-probability ratio with odd-variable reversal.
+  flux_term:
+    symbol: dsenvdt
+    latex: "\\dot S_{\\mathrm{env}} = \\langle \\dot Q/T \\rangle"
+    units: "k_B/s"
+    notes: Environment entropy flow from stochastic heat into the thermal bath.
+  decomposition_terms:
+    - id: housekeeping-excess-split
+      name: Housekeeping versus excess decomposition
+      latex: "\\Delta s_{\\mathrm{tot}} = \\Delta s_{\\mathrm{hk}} + \\Delta s_{\\mathrm{ex}}"
+      notes: Useful decomposition in driven steady states; parity conventions for odd variables must remain explicit.
+      epistemic_status: theorem
+  accounting_status: exact
+entropy_definition:
+  symbol: sigma
+  latex: "\\dot x_t = v_t,\\; m\\dot v_t = F(x_t,t) - \\gamma v_t + \\sqrt{2\\gamma k_B T/m}\\,\\xi_t;\\; \\Delta s_{\\mathrm{tot}}=\\ln\\frac{\\mathcal{P}[x,v]}{\\mathcal{P}^{\\dagger}[x^{\\dagger},-v^{\\dagger}]}."
+  units: "k_B/s"
+  assumptions:
+    - id: stochastic-calculus-convention
+      statement: Itô/Stratonovich convention is fixed consistently in trajectory and thermodynamic bookkeeping.
+      epistemic_status: theorem
+      citations: [seifert2012, spinneyford2012]
+    - id: local-detailed-balance
+      statement: Path-probability asymmetry is linked to heat exchange with the bath by local detailed balance.
+      epistemic_status: theorem
+      citations: [seifert2012, lebowitzspohn1999]
+    - id: isothermal-baseline
+      statement: Baseline underdamped formula assumes uniform bath temperature for standard EP decomposition.
+      epistemic_status: theorem
+      citations: [seifert2012, sekimoto2010]
+  zero_conditions:
+    - id: equilibrium-detailed-balance
+      statement: Conservative forces with equilibrium detailed balance imply vanishing steady irreversible current and sigma equals zero.
+      citations: [seifert2012, lebowitzspohn1999]
+operators:
+  triggers:
+    - id: nonconservative-driving
+      name: nonconservative-driving
+      definition: Add non-gradient forcing in phase space to generate persistent irreversible currents.
+      params: [force-nongradient-component, affinity-scale]
+      observables: [phase-space-current, entropy-production-rate]
+      notes: Breaking detailed balance raises housekeeping entropy production.
+      epistemic_status: theorem
+      citations: [seifert2012]
+    - id: protocol-modulation
+      name: protocol-modulation
+      definition: Apply time-dependent control parameters to drive finite-rate dissipation.
+      params: [protocol-rate, protocol-amplitude]
+      observables: [work-distribution, entropy-production-rate]
+      notes: Faster driving generally increases excess entropy production.
+      epistemic_status: theorem
+      citations: [crooks1999]
+    - id: feedback-control
+      name: feedback-control
+      definition: Use measurement-conditioned forcing that modifies entropy balance with information terms.
+      params: [feedback-gain, measurement-delay]
+      observables: [mutual-information-rate, entropy-production-rate]
+      notes: Information flow alters generalized second-law bounds.
+      epistemic_status: heuristic
+      citations: [seifert2012]
+  dampers:
+    - id: conservative-fdt-closure
+      name: conservative-fdt-closure
+      definition: Enforce conservative forcing and fluctuation-dissipation consistency to restore equilibrium relaxation.
+      params: [potential-convexity, temperature, friction]
+      observables: [irreversible-current, entropy-production-rate]
+      notes: Detailed-balance restoration suppresses irreversible dissipation.
+      epistemic_status: theorem
+      citations: [seifert2012, sekimoto2010]
+    - id: increased-friction-smoothing
+      name: increased-friction-smoothing
+      definition: Increase friction to damp velocity fluctuations and smooth phase-space currents at fixed forcing scales.
+      params: [friction-scale]
+      observables: [velocity-variance, entropy-production-rate]
+      notes: Trend is robust near equilibrium but can be context-dependent under strong forcing.
+      epistemic_status: heuristic
+      citations: [gardiner2009]
+spectral:
+  method: none
+  phi_semantics: none
+  phi_definition:
+    latex: "\\Phi(f)=\\text{none}"
+    notes: No canonical frequency-domain entropy observable is enforced in this domain.
+  bands:
+    - id: none
+      name: none
+      spec_type: none
+      value: null
+      units: "1"
+      notes: Placeholder band to satisfy schema.
+parameter_bands:
+  beta:
+    id: inverse-temperature-band
+    name: inverse-temperature regime
+    spec_type: categorical
+    value: [isothermal-baseline, weakly-perturbed]
+    units: "1/(k_B T)"
+    notes: Baseline assumes uniform temperature; nonuniform fields require corrections.
+  theta:
+    id: inertial-timescale-ratio
+    name: inertia versus relaxation regime
+    spec_type: categorical
+    value: [inertial, weakly-overdamped, overdamped-limit]
+    units: "m/gamma"
+    notes: Tracks approach to overdamped approximation.
+  zeta:
+    id: friction-structure-band
+    name: friction structure
+    spec_type: categorical
+    value: [uniform-friction, weakly-inhomogeneous, strong-inhomogeneous]
+    units: "arb"
+    notes: Inhomogeneous damping can generate extra terms in reduced descriptions.
+must_fail_tests:
+  - id: equilibrium-zero-ep-underdamped
+    statement: Claim sigma > 0 for a conservative equilibrium underdamped process with detailed balance and no irreversible current.
+    expected_outcome: reject
+    rationale: Equilibrium detailed balance requires vanishing total entropy production.
+    citations: [seifert2012, lebowitzspohn1999]
+    severity: hard
+  - id: naive-time-reversal-ignores-odd-variables
+    statement: Compute underdamped EP using backward trajectories that do not reverse odd variables (velocity/momentum parity), then claim exactness.
+    expected_outcome: reject
+    rationale: Odd/even variable parity is essential; naive reversal misses terms and misestimates housekeeping components.
+    citations: [spinneyford2012]
+    severity: hard
+limitations:
+  - id: nonuniform-temperature-anomaly
+    statement: Spatially varying temperature or friction can produce anomalous EP upon overdamped reduction; naive elimination is singular.
+    citations: [celani2012]
+  - id: coarse-graining-pitfalls
+    statement: Coarse-graining hidden momenta can hide irreversibility and bias inferred entropy production.
+    citations: [seifert2012, spinneyford2012]
+citations:
+  - id: seifert2012
+    type: doi
+    ref: "10.1088/0034-4885/75/12/126001"
+    title: Stochastic thermodynamics, fluctuation theorems and molecular machines
+    year: 2012
+    authors: [U. Seifert]
+  - id: spinneyford2012
+    type: doi
+    ref: "10.1103/PhysRevE.85.051113"
+    title: Entropy production in full phase space for continuous stochastic dynamics
+    year: 2012
+    authors: [R. E. Spinney, I. J. Ford]
+  - id: celani2012
+    type: doi
+    ref: "10.1103/PhysRevLett.109.260603"
+    title: Anomalous Thermodynamics at the Microscale
+    year: 2012
+    authors: [A. Celani, S. Bo, R. Eichhorn, E. Aurell]
+  - id: lebowitzspohn1999
+    type: doi
+    ref: "10.1023/A:1004589714161"
+    title: A Gallavotti-Cohen-Type Symmetry in the Large Deviation Functional for Stochastic Dynamics
+    year: 1999
+    authors: [J. L. Lebowitz, H. Spohn]
+  - id: sekimoto2010
+    type: book
+    ref: "K. Sekimoto, Stochastic Energetics, Springer"
+    title: Stochastic Energetics
+    year: 2010
+    authors: [K. Sekimoto]
+  - id: crooks1999
+    type: doi
+    ref: "10.1103/PhysRevE.60.2721"
+    title: Entropy production fluctuation theorem and the nonequilibrium work relation for free energy differences
+    year: 1999
+    authors: [G. E. Crooks]
+  - id: gardiner2009
+    type: book
+    ref: "C. W. Gardiner, Stochastic Methods, 4th ed., Springer"
+    title: Stochastic Methods
+    year: 2009
+    authors: [C. W. Gardiner]
+status: review

@@ -1,7 +1,7 @@
 id: overdamped-nonisothermal-anomalous-ep
 source_domain_id: overdamped-langevin-st
 target_domain_id: overdamped-langevin-st
-relation_type: approximation_limit
+relation_type: regime_shift
 conditions:
   text: Transition from uniform-temperature overdamped modeling to spatially varying temperature T(x) and/or friction gamma(x), where the overdamped elimination becomes singular and requires anomalous entropy-production corrections.
   params:
@@ -9,6 +9,7 @@ conditions:
     spatial_temperature_gradient: true
     spatial_friction_gradient: true
     correction_required: true
+    multiplicative_noise_convention_required: true
 preserved:
   - overdamped state-space representation in position variables
   - positivity of full entropy production once anomalous term is included
@@ -47,5 +48,5 @@ citations:
     authors: [U. Seifert]
 status: review
 context:
-  tags: [overdamped-langevin, nonisothermal, anomalous-ep, approximation-limit]
-  notes: Self-map relation encodes a validity-boundary shift within one domain id rather than a separate domain ontology node.
+  tags: [overdamped-langevin, nonisothermal, anomalous-ep, regime-shift]
+  notes: Self-map relation encodes a regime shift contract; introduce a dedicated variant domain only when long-lived separate semantics are required.

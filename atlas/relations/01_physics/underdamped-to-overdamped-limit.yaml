@@ -1,0 +1,52 @@
+id: underdamped-to-overdamped-limit
+source_domain_id: underdamped-langevin-st
+target_domain_id: overdamped-langevin-st
+relation_type: approximation_limit
+conditions:
+  text: Singular small-mass/high-friction limit where inertial relaxation is faster than system evolution and thermal background remains effectively uniform.
+  params:
+    inertial_timescale_ratio: "m/gamma << tau_system"
+    temperature_uniformity: "T = const"
+    local_detailed_balance: true
+preserved:
+  - positivity of total entropy production under valid limit assumptions
+  - trajectory irreversibility interpretation via path-probability ratios
+  - near-equilibrium fluctuation symmetry structure
+lost:
+  - explicit odd-variable (velocity/momentum) parity contributions
+  - inertial transient and phase-space current structure
+  - anomalous entropy terms outside uniform-temperature assumptions
+expected_effect:
+  direction: context_dependent
+  inequality: "sigma_underdamped -> sigma_overdamped in the regular overdamped limit; naive overdamped formulas can underestimate full EP when assumptions fail."
+  description: The limit is asymptotically valid for uniform temperature/friction but becomes singular in inhomogeneous media.
+must_fail_tests:
+  - id: nonuniform-t-overdamped-underestimates-ep
+    statement: Apply overdamped reduction with spatially varying T(x) and claim naive overdamped entropy production equals full underdamped dissipation without correction terms.
+    expected_outcome: reject
+    rationale: Celani et al. show a positive anomalous correction appears in the singular limit; odd-variable handling and reversal conventions remain essential.
+    citations: [celani2012, spinneyford2012]
+    severity: hard
+citations:
+  - id: celani2012
+    type: doi
+    ref: "10.1103/PhysRevLett.109.260603"
+    title: Anomalous Thermodynamics at the Microscale
+    year: 2012
+    authors: [A. Celani, S. Bo, R. Eichhorn, E. Aurell]
+  - id: seifert2012
+    type: doi
+    ref: "10.1088/0034-4885/75/12/126001"
+    title: Stochastic thermodynamics, fluctuation theorems and molecular machines
+    year: 2012
+    authors: [U. Seifert]
+  - id: spinneyford2012
+    type: doi
+    ref: "10.1103/PhysRevE.85.051113"
+    title: Entropy production in full phase space for continuous stochastic dynamics
+    year: 2012
+    authors: [R. E. Spinney, I. J. Ford]
+status: review
+context:
+  tags: [underdamped-langevin, overdamped-limit, singular-perturbation, anomalous-ep]
+  notes: Relation encodes a controlled approximation regime and its known failure mode in nonuniform thermal environments.
