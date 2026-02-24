@@ -1,0 +1,90 @@
+id: supersystem-network
+title: Synthetic Supersystem Network
+system_type:
+  primary: markov_network_thermodynamics
+  tags: [coarse-network, mesoscale]
+entropy_quantity_kind: budget_entropy
+epistemic_status: heuristic
+scope:
+  applies_to: [synthetic coupled subsystems]
+  does_not_apply: [single isolated microstate]
+boundary:
+  closure_type: open
+  exchange_channels: [matter, information]
+  external_entities:
+    - id: controller
+      role: driver
+      notes: synthetic controller
+entropy_accounting:
+  storage_term: {symbol: Ssys, latex: "S_{sys}", units: "J/K", notes: placeholder}
+  production_term: {symbol: Sigmasys, latex: "\\Sigma_{sys}", units: "J/K", notes: placeholder}
+  flux_term: {symbol: Phisys, latex: "\\Phi_{sys}", units: "J/K", notes: placeholder}
+  accounting_status: proxy
+entropy_definition:
+  symbol: Ssys
+  latex: "S_{sys}=\\sum_k S_k"
+  units: "J/K"
+  assumptions:
+    - id: a1
+      statement: Additive approximation across modules.
+      epistemic_status: disputed
+      citations: [c1]
+  zero_conditions:
+    - id: z1
+      statement: Zero under fully synchronized null process.
+      citations: [c1]
+operators:
+  triggers:
+    - id: tr1
+      name: coupling-on
+      definition: activates module exchange
+      params: [kappa]
+      observables: [edge-flow]
+      notes: placeholder
+      epistemic_status: heuristic
+      citations: [c1]
+  dampers:
+    - id: da1
+      name: regulation
+      definition: suppresses bursts
+      params: [eta]
+      observables: [edge-flow]
+      notes: placeholder
+      epistemic_status: empirical
+      citations: [c1]
+spectral:
+  method: wavelet
+  phi_semantics: energy
+  phi_definition:
+    latex: "\\Phi_{sys}(\\omega)"
+    notes: placeholder
+  bands:
+    - id: b-mid
+      name: medium
+      spec_type: range
+      value: [1.0, 5.0]
+      units: Hz
+      notes: placeholder
+parameter_bands:
+  beta: {id: pb-beta, name: beta, spec_type: point, value: 1.2, units: "1/J", notes: placeholder}
+  theta: {id: pb-theta, name: theta, spec_type: range, value: [0.2, 0.9], units: "1", notes: placeholder}
+  zeta: {id: pb-zeta, name: zeta, spec_type: distribution, value: lognormal, units: none, notes: placeholder}
+must_fail_tests:
+  - id: mf1
+    statement: Unnormalized transition matrix should fail budget equation.
+    expected_outcome: reject
+    rationale: conservation violation
+    citations: [c1]
+    severity: hard
+  - id: mf2
+    statement: Empty graph should fail relation extraction.
+    expected_outcome: reject
+    rationale: no connected structure
+    citations: [c1]
+    severity: soft
+citations:
+  - id: c1
+    type: note
+    ref: synthetic-reference-2
+status: review
+synthetic: true

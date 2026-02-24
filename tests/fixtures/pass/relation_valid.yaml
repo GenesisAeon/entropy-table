@@ -1,0 +1,30 @@
+id: composition-sub-to-super
+source_domain_id: subsystem-langevin
+target_domain_id: supersystem-network
+relation_type: composition
+conditions:
+  text: Subsystem state is aggregated into network node budget.
+  params:
+    map: linear-sum
+preserved: [state-ordering]
+lost: [micro-trajectory-detail]
+expected_effect:
+  direction: context_dependent
+  inequality: "Sigma_super >= Sigma_sub"
+  description: Composition can inflate aggregate uncertainty.
+must_fail_tests:
+  - id: mf1
+    statement: Missing part linkage should fail composition logic.
+    expected_outcome: reject
+    rationale: composition requires explicit parts
+    citations: [c1]
+    severity: hard
+citations:
+  - id: c1
+    type: note
+    ref: synthetic-relation-ref-1
+status: draft
+context:
+  tags: [nested-system, aggregation]
+  notes: placeholder
+parts: [subsystem-langevin]

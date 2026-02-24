@@ -1,27 +1,27 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Iterable
 
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
-ATLAS_DIR = ROOT / "atlas"
-SCHEMA_DIR = ATLAS_DIR / "schema"
-DOMAIN_SCHEMA_PATH = SCHEMA_DIR / "domain.schema.json"
-RELATION_SCHEMA_PATH = SCHEMA_DIR / "relation.schema.json"
-DOMAINS_DIR = ATLAS_DIR / "domains"
-RELATIONS_DIR = ATLAS_DIR / "relations"
+ATLAS = ROOT / "atlas"
+DOMAINS_DIR = ATLAS / "domains"
+RELATIONS_DIR = ATLAS / "relations"
+DOMAIN_SCHEMA_PATH = ATLAS / "schema" / "domain.schema.json"
+RELATION_SCHEMA_PATH = ATLAS / "schema" / "relation.schema.json"
 
 
-def load_yaml(path: Path) -> Any:
-    with path.open("r", encoding="utf-8") as handle:
-        return yaml.safe_load(handle)
+def load_yaml(path: Path) -> dict:
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"{path} must contain a YAML object at the top level")
+    return data
 
 
-def domain_files() -> Iterable[Path]:
+def domain_files() -> list[Path]:
     return sorted(DOMAINS_DIR.glob("**/*.yaml"))
 
 
-def relation_files() -> Iterable[Path]:
+def relation_files() -> list[Path]:
     return sorted(RELATIONS_DIR.glob("**/*.yaml"))
