@@ -1,9 +1,9 @@
 id: ctmc-coarsegraining-hidden-variables
 source_domain_id: ctmc-schnakenberg
-target_domain_id: proxy-other
+target_domain_id: overdamped-langevin-st
 relation_type: coarse_graining
 conditions:
-  text: Microstate CTMC trajectories are mapped to mesostates by a non-invertible lumping map, leaving hidden transitions unobserved while inferred dynamics is treated as an effective Markov/HMM process.
+  text: Microstate CTMC trajectories are mapped to mesoscopic coordinates by a non-invertible lumping map, leaving hidden transitions unobserved while inferred dynamics is treated as an effective overdamped diffusion (or Markov/HMM proxy to it).
   params:
     lumping: non_invertible
     hidden_variables: true
@@ -14,7 +14,7 @@ preserved:
 lost:
   - exact microscopic cycle affinities
   - full housekeeping versus excess decomposition
-  - hidden-current contributions to true entropy production
+  - hidden-current contributions to true entropy production in eliminated coordinates
 expected_effect:
   direction: decrease
   inequality: apparent-ep <= true-ep
@@ -53,5 +53,5 @@ citations:
     authors: [K. Kawaguchi, Y. Nakayama]
 status: review
 context:
-  tags: [coarse-graining, hidden-variables, apparent-entropy-production]
+  tags: [coarse-graining, hidden-variables, apparent-entropy-production, overdamped-langevin]
   notes: Inequality is assumption-sensitive; non-Markov coarse-grained dynamics may require specialized estimators.
