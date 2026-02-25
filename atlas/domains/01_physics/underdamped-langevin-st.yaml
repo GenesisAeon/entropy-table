@@ -60,19 +60,19 @@ entropy_definition:
     - id: stochastic-calculus-convention
       statement: Itô/Stratonovich convention is fixed consistently in trajectory and thermodynamic bookkeeping.
       epistemic_status: theorem
-      citations: [seifert2012, spinneyford2012]
+      citations: [seifert2012-rpp, spinney-ford2012-pre]
     - id: local-detailed-balance
       statement: Path-probability asymmetry is linked to heat exchange with the bath by local detailed balance.
       epistemic_status: theorem
-      citations: [seifert2012, lebowitzspohn1999]
+      citations: [seifert2012-rpp, lebowitz-spohn1999-jsp]
     - id: isothermal-baseline
       statement: Baseline underdamped formula assumes uniform bath temperature for standard EP decomposition.
       epistemic_status: theorem
-      citations: [seifert2012, sekimoto2010]
+      citations: [seifert2012-rpp, sekimoto2010-book]
   zero_conditions:
     - id: equilibrium-detailed-balance
       statement: Conservative forces with equilibrium detailed balance imply vanishing steady irreversible current and sigma equals zero.
-      citations: [seifert2012, lebowitzspohn1999]
+      citations: [seifert2012-rpp, lebowitz-spohn1999-jsp]
 operators:
   triggers:
     - id: nonconservative-driving
@@ -82,7 +82,7 @@ operators:
       observables: [phase-space-current, entropy-production-rate]
       notes: Breaking detailed balance raises housekeeping entropy production.
       epistemic_status: theorem
-      citations: [seifert2012]
+      citations: [seifert2012-rpp]
     - id: protocol-modulation
       name: protocol-modulation
       definition: Apply time-dependent control parameters to drive finite-rate dissipation.
@@ -98,7 +98,7 @@ operators:
       observables: [mutual-information-rate, entropy-production-rate]
       notes: Information flow alters generalized second-law bounds.
       epistemic_status: heuristic
-      citations: [seifert2012]
+      citations: [seifert2012-rpp]
   dampers:
     - id: conservative-fdt-closure
       name: conservative-fdt-closure
@@ -107,7 +107,7 @@ operators:
       observables: [irreversible-current, entropy-production-rate]
       notes: Detailed-balance restoration suppresses irreversible dissipation.
       epistemic_status: theorem
-      citations: [seifert2012, sekimoto2010]
+      citations: [seifert2012-rpp, sekimoto2010-book]
     - id: increased-friction-smoothing
       name: increased-friction-smoothing
       definition: Increase friction to damp velocity fluctuations and smooth phase-space currents at fixed forcing scales.
@@ -115,7 +115,7 @@ operators:
       observables: [velocity-variance, entropy-production-rate]
       notes: Trend is robust near equilibrium but can be context-dependent under strong forcing.
       epistemic_status: heuristic
-      citations: [gardiner2009]
+      citations: [gardiner2009-book]
 spectral:
   method: none
   phi_semantics: none
@@ -156,47 +156,47 @@ must_fail_tests:
     statement: Claim sigma > 0 for a conservative equilibrium underdamped process with detailed balance and no irreversible current.
     expected_outcome: reject
     rationale: Equilibrium detailed balance requires vanishing total entropy production.
-    citations: [seifert2012, lebowitzspohn1999]
+    citations: [seifert2012-rpp, lebowitz-spohn1999-jsp]
     severity: hard
   - id: naive-time-reversal-ignores-odd-variables
     statement: Compute underdamped EP using backward trajectories that do not reverse odd variables (velocity/momentum parity), then claim exactness.
     expected_outcome: reject
     rationale: Odd/even variable parity is essential; naive reversal misses terms and misestimates housekeeping components.
-    citations: [spinneyford2012]
+    citations: [spinney-ford2012-pre]
     severity: hard
 limitations:
   - id: nonuniform-temperature-anomaly
     statement: Spatially varying temperature or friction can produce anomalous EP upon overdamped reduction; naive elimination is singular.
-    citations: [celani2012]
+    citations: [celani2012-prl]
   - id: coarse-graining-pitfalls
     statement: Coarse-graining hidden momenta can hide irreversibility and bias inferred entropy production.
-    citations: [seifert2012, spinneyford2012]
+    citations: [seifert2012-rpp, spinney-ford2012-pre]
 citations:
-  - id: seifert2012
+  - id: seifert2012-rpp
     type: doi
     ref: "10.1088/0034-4885/75/12/126001"
     title: Stochastic thermodynamics, fluctuation theorems and molecular machines
     year: 2012
     authors: [U. Seifert]
-  - id: spinneyford2012
+  - id: spinney-ford2012-pre
     type: doi
     ref: "10.1103/PhysRevE.85.051113"
     title: Entropy production in full phase space for continuous stochastic dynamics
     year: 2012
     authors: [R. E. Spinney, I. J. Ford]
-  - id: celani2012
+  - id: celani2012-prl
     type: doi
     ref: "10.1103/PhysRevLett.109.260603"
     title: Anomalous Thermodynamics at the Microscale
     year: 2012
     authors: [A. Celani, S. Bo, R. Eichhorn, E. Aurell]
-  - id: lebowitzspohn1999
+  - id: lebowitz-spohn1999-jsp
     type: doi
     ref: "10.1023/A:1004589714161"
     title: A Gallavotti-Cohen-Type Symmetry in the Large Deviation Functional for Stochastic Dynamics
     year: 1999
     authors: [J. L. Lebowitz, H. Spohn]
-  - id: sekimoto2010
+  - id: sekimoto2010-book
     type: book
     ref: "K. Sekimoto, Stochastic Energetics, Springer"
     title: Stochastic Energetics
@@ -208,7 +208,7 @@ citations:
     title: Entropy production fluctuation theorem and the nonequilibrium work relation for free energy differences
     year: 1999
     authors: [G. E. Crooks]
-  - id: gardiner2009
+  - id: gardiner2009-book
     type: book
     ref: "C. W. Gardiner, Stochastic Methods, 4th ed., Springer"
     title: Stochastic Methods

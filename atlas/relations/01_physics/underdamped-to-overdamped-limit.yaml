@@ -25,22 +25,22 @@ must_fail_tests:
     statement: Apply overdamped reduction with spatially varying T(x) and claim naive overdamped entropy production equals full underdamped dissipation without correction terms.
     expected_outcome: reject
     rationale: Celani et al. show a positive anomalous correction appears in the singular limit; odd-variable handling and reversal conventions remain essential.
-    citations: [celani2012, spinneyford2012]
+    citations: [celani2012-prl, spinney-ford2012-pre]
     severity: hard
 citations:
-  - id: celani2012
+  - id: celani2012-prl
     type: doi
     ref: "10.1103/PhysRevLett.109.260603"
     title: Anomalous Thermodynamics at the Microscale
     year: 2012
     authors: [A. Celani, S. Bo, R. Eichhorn, E. Aurell]
-  - id: seifert2012
+  - id: seifert2012-rpp
     type: doi
     ref: "10.1088/0034-4885/75/12/126001"
     title: Stochastic thermodynamics, fluctuation theorems and molecular machines
     year: 2012
     authors: [U. Seifert]
-  - id: spinneyford2012
+  - id: spinney-ford2012-pre
     type: doi
     ref: "10.1103/PhysRevE.85.051113"
     title: Entropy production in full phase space for continuous stochastic dynamics
