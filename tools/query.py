@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -22,6 +23,7 @@ RELATION_TYPES = {
     "coupling",
     "aggregation_rule",
 }
+CACHE_PATH = Path("cache/index.json")
 
 
 def load_domains() -> list[dict]:
@@ -30,6 +32,81 @@ def load_domains() -> list[dict]:
 
 def load_relations() -> list[dict]:
     return sorted([load_yaml(path) for path in relation_files()], key=lambda r: r.get("id", ""))
+
+
+def load_cache_index() -> dict | None:
+    if not CACHE_PATH.exists():
+        return None
+    try:
+        data = json.loads(CACHE_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    return data
+
+
+def load_domains_from_cache(index: dict) -> list[dict]:
+    items = []
+    for domain_id, domain in (index.get("domains") or {}).items():
+        items.append(
+            {
+                "id": domain_id,
+                "title": domain.get("title", ""),
+                "system_type": {
+                    "primary": domain.get("system_primary", ""),
+                    "tags": domain.get("tags", []),
+                },
+                "context": {"tags": domain.get("tags", [])},
+                "boundary": {
+                    "closure_type": domain.get("closure_type", "unknown"),
+                    "exchange_channels": domain.get("exchange_channels", []),
+                },
+                "must_fail_tests": [
+                    {
+                        "id": row.get("test_id", "<missing-test-id>"),
+                        "severity": row.get("severity", "unknown"),
+                        "citations": [row.get("citation_id", "")],
+                    }
+                    for row in (domain.get("must_fail_rows") or [])
+                ],
+            }
+        )
+    return sorted(items, key=lambda d: d.get("id", ""))
+
+
+def load_relations_from_cache(index: dict) -> list[dict]:
+    items = []
+    for relation_id, relation in (index.get("relations") or {}).items():
+        items.append(
+            {
+                "id": relation_id,
+                "relation_type": relation.get("relation_type", "unknown"),
+                "source_domain_id": relation.get("source", ""),
+                "target_domain_id": relation.get("target", ""),
+                "must_fail_tests": [
+                    {
+                        "id": row.get("test_id", "<missing-test-id>"),
+                        "severity": row.get("severity", "unknown"),
+                        "citations": [row.get("citation_id", "")],
+                    }
+                    for row in (relation.get("must_fail_rows") or [])
+                ],
+            }
+        )
+    return sorted(items, key=lambda r: r.get("id", ""))
+
+
+def get_domains(index: dict | None) -> list[dict]:
+    if index is not None:
+        return load_domains_from_cache(index)
+    return load_domains()
+
+
+def get_relations(index: dict | None) -> list[dict]:
+    if index is not None:
+        return load_relations_from_cache(index)
+    return load_relations()
 
 
 def validate_choice(value: str | None, valid: set[str], flag: str) -> int:
@@ -49,7 +126,7 @@ def cmd_list_domains(args: argparse.Namespace) -> int:
         return 1
 
     matched = []
-    for domain in load_domains():
+    for domain in get_domains(args.index):
         boundary = domain.get("boundary", {}) or {}
         system_type = domain.get("system_type", {}) or {}
         context = domain.get("context", {}) or {}
@@ -84,7 +161,7 @@ def cmd_list_relations(args: argparse.Namespace) -> int:
         return 1
 
     matched = []
-    for relation in load_relations():
+    for relation in get_relations(args.index):
         if args.type and relation.get("relation_type") != args.type:
             continue
         if args.source and relation.get("source_domain_id") != args.source:
@@ -113,15 +190,44 @@ def iter_must_fail_rows(item: dict) -> list[tuple[str, str, str]]:
 
 def cmd_find_must_fail_by_citation(args: argparse.Namespace) -> int:
     results = []
-    for domain in load_domains():
-        for citation_id, test_id, severity in iter_must_fail_rows(domain):
-            if citation_id == args.citation_id:
-                results.append((domain.get("id", "<missing-id>"), test_id, severity, "domain"))
 
-    for relation in load_relations():
-        for citation_id, test_id, severity in iter_must_fail_rows(relation):
-            if citation_id == args.citation_id:
-                results.append((relation.get("id", "<missing-id>"), test_id, severity, "relation"))
+    if args.index is not None:
+        citation_id = args.citation_id
+        for domain_id in ((args.index.get("reverse") or {}).get("citation_to_domains") or {}).get(citation_id, []):
+            domain = ((args.index.get("domains") or {}).get(domain_id) or {})
+            for row in domain.get("must_fail_rows", []):
+                if row.get("citation_id") == citation_id:
+                    results.append(
+                        (
+                            domain_id,
+                            row.get("test_id", "<missing-test-id>"),
+                            row.get("severity", "unknown"),
+                            "domain",
+                        )
+                    )
+
+        for relation_id in ((args.index.get("reverse") or {}).get("citation_to_relations") or {}).get(citation_id, []):
+            relation = ((args.index.get("relations") or {}).get(relation_id) or {})
+            for row in relation.get("must_fail_rows", []):
+                if row.get("citation_id") == citation_id:
+                    results.append(
+                        (
+                            relation_id,
+                            row.get("test_id", "<missing-test-id>"),
+                            row.get("severity", "unknown"),
+                            "relation",
+                        )
+                    )
+    else:
+        for domain in load_domains():
+            for citation_id, test_id, severity in iter_must_fail_rows(domain):
+                if citation_id == args.citation_id:
+                    results.append((domain.get("id", "<missing-id>"), test_id, severity, "domain"))
+
+        for relation in load_relations():
+            for citation_id, test_id, severity in iter_must_fail_rows(relation):
+                if citation_id == args.citation_id:
+                    results.append((relation.get("id", "<missing-id>"), test_id, severity, "relation"))
 
     results.sort(key=lambda x: (x[3], x[0], x[1]))
 
@@ -166,14 +272,17 @@ def print_composition_tree(relations: list[dict]) -> None:
         walk(root, 0, set())
 
 
-def cmd_graph_summary(_: argparse.Namespace) -> int:
-    domains = load_domains()
-    relations = load_relations()
+def cmd_graph_summary(args: argparse.Namespace) -> int:
+    domains = get_domains(args.index)
+    relations = get_relations(args.index)
 
     relation_counts = Counter(r.get("relation_type", "unknown") for r in relations)
     closure_counts = Counter((d.get("boundary", {}) or {}).get("closure_type", "unknown") for d in domains)
 
+    cache_note = "present" if args.index is not None else "not found"
+
     print("Graph summary:")
+    print(f"  cache: {cache_note}")
     print(f"  total_domains: {len(domains)}")
     print(f"  total_relations: {len(relations)}")
     print("  relation_counts_by_type:")
@@ -234,6 +343,7 @@ def main(argv: list[str] | None = None) -> int:
 
     parser = build_command_parser(command)
     parsed = parser.parse_args(args[1:])
+    parsed.index = load_cache_index()
     return commands[command](parsed)
 
 
