@@ -281,8 +281,7 @@ def cmd_graph_summary(args: argparse.Namespace) -> int:
 
     cache_note = "present" if args.index is not None else "not found"
 
-    print("Graph summary:")
-    print(f"  cache: {cache_note}")
+    print(f"Graph summary (cache: {cache_note}):")
     print(f"  total_domains: {len(domains)}")
     print(f"  total_relations: {len(relations)}")
     print("  relation_counts_by_type:")

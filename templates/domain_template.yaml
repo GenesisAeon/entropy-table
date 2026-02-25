@@ -1,0 +1,99 @@
+id: "<TODO:id>"
+title: "<TODO:title>"
+system_type:
+  primary: "<TODO:system_type.primary>"
+  tags: []
+  notes: "<TODO:system_type.notes>"
+entropy_quantity_kind: "<TODO:entropy_quantity_kind>"
+epistemic_status: "<TODO:epistemic_status>"
+scope:
+  applies_to:
+    - "<TODO:scope.applies_to.0>"
+  does_not_apply:
+    - "<TODO:scope.does_not_apply.0>"
+boundary:
+  closure_type: "<TODO:boundary.closure_type>"
+  closure_notes: "<TODO:boundary.closure_notes>"
+  exchange_channels: []
+  external_entities: []
+entropy_accounting:
+  storage_term:
+    symbol: "<TODO:entropy_accounting.storage_term.symbol>"
+    latex: "<TODO>"
+    units: "<TODO>"
+    notes: "<TODO>"
+  production_term:
+    symbol: "<TODO:entropy_accounting.production_term.symbol>"
+    latex: "<TODO>"
+    units: "<TODO>"
+    notes: "<TODO>"
+  flux_term:
+    symbol: "<TODO:entropy_accounting.flux_term.symbol>"
+    latex: "<TODO>"
+    units: "<TODO>"
+    notes: "<TODO>"
+  decomposition_terms: []
+  accounting_status: "<TODO:entropy_accounting.accounting_status>"
+entropy_definition:
+  symbol: "<TODO:entropy_definition.symbol>"
+  latex: "<TODO>"
+  units: "<TODO>"
+  assumptions: []
+  zero_conditions: []
+operators:
+  triggers: []
+  dampers: []
+spectral:
+  method: none
+  phi_semantics: none
+  phi_definition:
+    latex: "\\Phi(f)=\\text{none}"
+    notes: "<TODO>"
+  bands:
+    - id: none
+      name: none
+      spec_type: none
+      value: null
+      units: "1"
+      notes: "<TODO>"
+parameter_bands:
+  beta:
+    id: "<TODO:parameter_bands.beta.id>"
+    name: "<TODO>"
+    spec_type: categorical
+    value: ["<TODO>"]
+    units: "<TODO>"
+    notes: "<TODO>"
+  theta:
+    id: "<TODO:parameter_bands.theta.id>"
+    name: "<TODO>"
+    spec_type: categorical
+    value: ["<TODO>"]
+    units: "<TODO>"
+    notes: "<TODO>"
+  zeta:
+    id: "<TODO:parameter_bands.zeta.id>"
+    name: "<TODO>"
+    spec_type: categorical
+    value: ["<TODO>"]
+    units: "<TODO>"
+    notes: "<TODO>"
+must_fail_tests:
+  - id: "<TODO:must_fail_tests.0.id>"
+    statement: "<TODO>"
+    expected_outcome: reject
+    rationale: "<TODO>"
+    citations: []
+    severity: hard
+limitations:
+  - id: "<TODO:limitations.0.id>"
+    statement: "<TODO>"
+    citations: []
+citations:
+  - id: "<TODO:citations.0.id>"
+    type: doi
+    ref: "<TODO>"
+    title: "<TODO>"
+    year: 2000
+    authors: ["<TODO>"]
+status: "<TODO:status>"
