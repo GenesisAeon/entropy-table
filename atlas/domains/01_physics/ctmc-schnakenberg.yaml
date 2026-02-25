@@ -60,18 +60,18 @@ entropy_definition:
     - id: markov-jump-assumption
       statement: Dynamics is a CTMC with normalized probabilities and finite escape rates.
       epistemic_status: theorem
-      citations: [schnakenberg1976, lebowitzspohn1999]
+      citations: [schnakenberg1976-rmp, lebowitz-spohn1999-jsp]
     - id: microreversibility-assumption
       statement: Reverse transitions exist on edges used for entropy-production expressions (w_ij > 0 implies w_ji > 0).
       epistemic_status: theorem
-      citations: [seifert2012]
+      citations: [seifert2012-rpp]
   zero_conditions:
     - id: detailed-balance-zero
       statement: If detailed balance holds (p_i^* w_ij = p_j^* w_ji for all i,j), all cycle affinities and sigma vanish.
-      citations: [schnakenberg1976, seifert2012]
+      citations: [schnakenberg1976-rmp, seifert2012-rpp]
     - id: no-current-zero
       statement: Instantaneously, sigma = 0 when every edge current J_ij is zero.
-      citations: [lebowitzspohn1999]
+      citations: [lebowitz-spohn1999-jsp]
 operators:
   triggers:
     - id: cycle-affinity-injection
@@ -81,7 +81,7 @@ operators:
       observables: [cycle-current, entropy-production-rate]
       notes: Nonzero affinity-current products raise irreversible dissipation.
       epistemic_status: theorem
-      citations: [schnakenberg1976, seifert2012]
+      citations: [schnakenberg1976-rmp, seifert2012-rpp]
     - id: boundary-reservoir-bias
       name: boundary-reservoir-bias
       definition: Impose unequal reservoir activities/fugacities encoded in boundary transition rates.
@@ -89,7 +89,7 @@ operators:
       observables: [net-flux, entropy-production-rate]
       notes: Boundary-driven Markov transport breaks detailed balance in the bulk.
       epistemic_status: empirical
-      citations: [lebowitzspohn1999]
+      citations: [lebowitz-spohn1999-jsp]
   dampers:
     - id: detailed-balance-restoration
       name: detailed-balance-restoration
@@ -98,7 +98,7 @@ operators:
       observables: [cycle-affinity, entropy-production-rate]
       notes: As affinities vanish, network EP collapses to zero at equilibrium.
       epistemic_status: theorem
-      citations: [schnakenberg1976]
+      citations: [schnakenberg1976-rmp]
     - id: timescale-homogenization
       name: timescale-homogenization
       definition: Increase symmetric transition activity at fixed antisymmetric bias to reduce occupancy bottlenecks and net currents.
@@ -106,7 +106,7 @@ operators:
       observables: [edge-current, entropy-production-rate]
       notes: For fixed affinity structure, current suppression reduces sigma.
       epistemic_status: heuristic
-      citations: [seifert2012]
+      citations: [seifert2012-rpp]
     - id: observational-coarse-graining
       name: observational-coarse-graining
       definition: Lump microstates into mesostates when only partial observables are retained.
@@ -149,7 +149,7 @@ must_fail_tests:
     statement: For any finite CTMC satisfying detailed balance with stationary p*, computed sigma at p* must be exactly zero.
     expected_outcome: pass-if-zero-otherwise-reject
     rationale: Positive EP at detailed balance contradicts Schnakenberg cycle-affinity theory.
-    citations: [schnakenberg1976, seifert2012]
+    citations: [schnakenberg1976-rmp, seifert2012-rpp]
     severity: hard
   - id: lumping-cannot-increase-ep
     statement: In a model with hidden fast states, the inferred mesoscopic EP from lumped trajectories exceeds microscopic EP.
@@ -161,26 +161,26 @@ must_fail_tests:
     statement: The model asserts a universal EP peak at every critical point in finite Markov networks.
     expected_outcome: reject
     rationale: No theorem guarantees universal critical-point EP maxima across all Markov models.
-    citations: [seifert2012]
+    citations: [seifert2012-rpp]
     severity: soft
 limitations:
   - id: nonmarkovian-memory-limitation
     statement: Semi-Markov and strongly non-Markovian hidden dynamics require modified entropy-production estimators.
     citations: [esposito2012]
 citations:
-  - id: schnakenberg1976
+  - id: schnakenberg1976-rmp
     type: doi
     ref: "10.1103/RevModPhys.48.571"
     title: Network theory of microscopic and macroscopic behavior of master equation systems
     year: 1976
     authors: [J. Schnakenberg]
-  - id: lebowitzspohn1999
+  - id: lebowitz-spohn1999-jsp
     type: doi
     ref: "10.1023/A:1004589714161"
     title: A Gallavotti-Cohen-Type Symmetry in the Large Deviation Functional for Stochastic Dynamics
     year: 1999
     authors: [J. L. Lebowitz, H. Spohn]
-  - id: seifert2012
+  - id: seifert2012-rpp
     type: doi
     ref: "10.1088/0034-4885/75/12/126001"
     title: Stochastic thermodynamics, fluctuation theorems and molecular machines

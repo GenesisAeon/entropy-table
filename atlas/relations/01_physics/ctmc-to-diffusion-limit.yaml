@@ -3,50 +3,90 @@ source_domain_id: ctmc-schnakenberg
 target_domain_id: overdamped-langevin-st
 relation_type: approximation_limit
 conditions:
-  text: Take lattice spacing dx -> 0 and time-step scaling so jump moments converge to drift and diffusion coefficients (Kramers-Moyal/Fokker-Planck limit), with smooth fields and local detailed-balance-consistent rate ratios.
+  text: Use the controlled diffusive lattice limit in which nearest-neighbor CTMC jumps converge to an overdamped Langevin/Fokker-Planck description under local detailed balance in an isothermal bath.
   params:
     dx_limit: 0
-    rate_scaling: diffusive
-    smooth_coefficients: true
+    rate_scaling: "w_±(x) = D/dx^2 ± (mu*F(x))/(2*dx) + O(1), with F(x) = -dU/dx"
+    local_detailed_balance_ratio: "ln[w_+(x)/w_-(x+dx)] = -beta*(U(x+dx)-U(x)) + O(dx^3)"
+    isothermal_bath: "T(x)=const"
+    smooth_potential_requirement: "U in C^2 (piecewise C^3 preferred for controlled truncation errors)"
+    smooth_density_requirement: "p(x,t), F(x), D(x) sufficiently smooth for Kramers-Moyal truncation"
     local_detailed_balance: true
 preserved:
   - positivity of total entropy production
-  - near-equilibrium fluctuation symmetry structure
-  - continuity-equation form for probability evolution
+  - path-ratio/KL interpretation of irreversibility and integral fluctuation theorem structure under matched forward-backward conventions
+  - detailed-balance equivalence with zero entropy production in the equilibrium/isothermal limit
+  - continuity-equation form for probability evolution in the limiting Fokker-Planck dynamics
 lost:
-  - discrete cycle-topology resolution
-  - finite-state jump-event statistics
-  - exact edgewise affinity-current decomposition
+  - discrete cycle-topology resolution and edge-resolved affinity-current decomposition
+  - finite-state jump-counting/event-statistics at sub-cell resolution
+  - hidden-variable and unresolved fast-mode contributions that can change apparent entropy production after coarse-graining
 expected_effect:
   direction: context_dependent
-  inequality: "sigma_ctmc -> sigma_diffusion as dx -> 0 under regularity assumptions; outside this limit either side may deviate due to singular corrections."
-  description: Diffusion-limit mapping is asymptotically consistent but can miss finite-spacing or anomalous contributions when assumptions fail.
+  inequality: "sigma_ctmc -> sigma_overdamped as dx -> 0 under the stated scaling/regularity assumptions; at finite dx either estimator may under- or over-shoot depending on discretization and coarse-graining bias."
+  description: Convergence is asymptotic in the controlled diffusive/isothermal limit. Away from that limit, finite-resolution errors, cancellation structure in discrete currents, and singular elimination effects can invalidate naive one-to-one EP matching.
 must_fail_tests:
   - id: inhomogeneous-temperature-anomaly
     statement: Apply naive overdamped diffusion-limit EP formula to a CTMC approximation with spatially varying temperature/friction and conclude full EP is captured without correction.
     expected_outcome: reject
     rationale: Eliminating fast variables in inhomogeneous media can produce anomalous EP not recovered by naive overdamped formulas.
-    citations: [celani2012]
+    citations: [celani2012-prl]
+    severity: hard
+  - id: spatially-varying-friction-singular-limit
+    statement: Use a CTMC with gamma(x) varying across space, take dx -> 0, and claim naive overdamped EP from the reduced position process remains exact without singular-limit correction terms.
+    expected_outcome: reject
+    rationale: Position-dependent damping/noise in overdamped reductions introduces singular-limit corrections; naive formulas can miss irreversible contributions.
+    citations: [celani2012-prl, seifert2012-rpp]
+    severity: hard
+  - id: multiplicative-noise-convention-ambiguity
+    statement: Estimate EP in a diffusion-limit model with state-dependent diffusion using mixed Itô/Stratonovich conventions but claim convention-independent equality to CTMC EP.
+    expected_outcome: reject
+    rationale: With multiplicative noise, drift/heat bookkeeping depends on a declared stochastic-calculus convention; inconsistent conventions make EP estimates ambiguous.
+    citations: [spinney-ford2012-pre, sekimoto2010-book]
     severity: hard
 citations:
-  - id: gardiner2009
+  - id: gardiner2009-book
     type: book
     ref: "C. W. Gardiner, Stochastic Methods, 4th ed., Springer"
     title: Stochastic Methods
     year: 2009
     authors: [C. W. Gardiner]
-  - id: vankampen2007
+  - id: van-kampen2007-book
     type: book
     ref: "N. G. van Kampen, Stochastic Processes in Physics and Chemistry, 3rd ed., North-Holland"
     title: Stochastic Processes in Physics and Chemistry
     year: 2007
     authors: [N. G. van Kampen]
-  - id: celani2012
+  - id: lebowitz-spohn1999-jsp
+    type: doi
+    ref: "10.1023/A:1004589714161"
+    title: A Gallavotti-Cohen-Type Symmetry in the Large Deviation Functional for Stochastic Dynamics
+    year: 1999
+    authors: [J. L. Lebowitz, H. Spohn]
+  - id: seifert2012-rpp
+    type: doi
+    ref: "10.1088/0034-4885/75/12/126001"
+    title: Stochastic thermodynamics, fluctuation theorems and molecular machines
+    year: 2012
+    authors: [U. Seifert]
+  - id: celani2012-prl
     type: doi
     ref: "10.1103/PhysRevLett.109.260603"
     title: Anomalous Thermodynamics at the Microscale
     year: 2012
     authors: [A. Celani, S. Bo, R. Eichhorn, E. Aurell]
+  - id: spinney-ford2012-pre
+    type: doi
+    ref: "10.1103/PhysRevE.85.051113"
+    title: Entropy production in full phase space for continuous stochastic dynamics
+    year: 2012
+    authors: [R. E. Spinney, I. J. Ford]
+  - id: sekimoto2010-book
+    type: book
+    ref: "K. Sekimoto, Stochastic Energetics, Springer"
+    title: Stochastic Energetics
+    year: 2010
+    authors: [K. Sekimoto]
 status: review
 context:
   tags: [ctmc, diffusion-limit, fokker-planck, overdamped-langevin]
