@@ -5,25 +5,89 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
-from tools.compute.case_runner import run_cases
+from .case_runner import load_case, resolve_case_paths, run_case
 
-REPORT_PATH = Path("outputs/compute_report.md")
+DEFAULT_REPORT_PATH = Path("outputs/compute_report.md")
 
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run compute cases and emit markdown report")
-    parser.add_argument("--case", action="append", dest="cases", required=True, help="Path to case YAML")
+    parser.add_argument("--case", action="append", dest="cases", help="Path to case YAML")
+    parser.add_argument(
+        "--scan-dir",
+        default="staging/cases/",
+        help="Directory of case YAML files to scan (default: staging/cases/)",
+    )
+    parser.add_argument("--only-failures", action="store_true", help="Show only failing cases in table")
+    parser.add_argument("--fail-fast", action="store_true", help="Stop execution after first failing case")
+    parser.add_argument("--out", default=str(DEFAULT_REPORT_PATH), help="Report output path")
     return parser
 
 
-def write_report(case_paths: list[str]) -> Path:
-    results = sorted(run_cases(case_paths), key=lambda item: item["case_id"])
+def _sorted_results(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return sorted(results, key=lambda item: (item["case_id"], item["calculator"]))
+
+
+def _count_constraint_failures(results: list[dict[str, Any]]) -> dict[str, int]:
+    counts = {"sigma_min": 0, "sigma_max": 0, "sigma_close": 0}
+    for item in results:
+        if item["status"] != "fail":
+            continue
+        for error in item.get("errors", []):
+            if "sigma_min" in error:
+                counts["sigma_min"] += 1
+            elif "sigma_max" in error:
+                counts["sigma_max"] += 1
+            elif "within" in error:
+                counts["sigma_close"] += 1
+    return counts
+
+
+def _citation_ids(case_dicts: list[dict[str, Any]]) -> list[str]:
+    citations: set[str] = set()
+    for case in case_dicts:
+        raw = case.get("citations", [])
+        if isinstance(raw, list):
+            citations.update(str(item) for item in raw)
+    return sorted(citations)
+
+
+def write_report(
+    case_paths: list[str | Path],
+    *,
+    out_path: str | Path = DEFAULT_REPORT_PATH,
+    only_failures: bool = False,
+    fail_fast: bool = False,
+) -> Path:
+    run_items: list[dict[str, Any]] = []
+    case_dicts: list[dict[str, Any]] = []
+    for path in case_paths:
+        case_data = load_case(path)
+        case_dicts.append(case_data)
+        result = run_case(case_data)
+        run_items.append(result)
+        if fail_fast and result["status"] == "fail":
+            break
+
+    results = _sorted_results(run_items)
+    displayed = [item for item in results if item["status"] == "fail"] if only_failures else results
     pass_count = sum(1 for item in results if item["status"] == "pass")
     fail_count = len(results) - pass_count
     timestamp = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    by_calculator: dict[str, dict[str, int]] = {}
+    for item in results:
+        calc = item["calculator"]
+        bucket = by_calculator.setdefault(calc, {"total": 0, "pass": 0, "fail": 0})
+        bucket["total"] += 1
+        bucket[item["status"]] += 1
 
-    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    constraint_counts = _count_constraint_failures(results)
+    citation_ids = _citation_ids(case_dicts)
+
+    out = Path(out_path)
+    out.parent.mkdir(parents=True, exist_ok=True)
     lines = [
         "# Compute Case Report",
         "",
@@ -34,7 +98,7 @@ def write_report(case_paths: list[str]) -> Path:
         "| case_id | calculator | sigma | status | input_digest | notes |",
         "|---|---|---:|---|---|---|",
     ]
-    for item in results:
+    for item in displayed:
         notes = (item.get("notes") or "").replace("|", "\\|")
         lines.append(
             "| {case_id} | {calculator} | {sigma:.12g} | {status} | `{digest}` | {notes} |".format(
@@ -55,16 +119,50 @@ def write_report(case_paths: list[str]) -> Path:
             f"- Total cases: **{len(results)}**",
             f"- Pass: **{pass_count}**",
             f"- Fail: **{fail_count}**",
+            "",
+            "### Cases by calculator",
+            "",
+            "| calculator | total | pass | fail |",
+            "|---|---:|---:|---:|",
         ]
     )
+    for calculator in sorted(by_calculator):
+        counts = by_calculator[calculator]
+        lines.append(
+            f"| {calculator} | {counts['total']} | {counts['pass']} | {counts['fail']} |"
+        )
 
-    REPORT_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    return REPORT_PATH
+    lines.extend(
+        [
+            "",
+            "### Constraint types hit",
+            "",
+            f"- sigma_min failures: **{constraint_counts['sigma_min']}**",
+            f"- sigma_max failures: **{constraint_counts['sigma_max']}**",
+            f"- sigma_close failures: **{constraint_counts['sigma_close']}**",
+            "",
+            "### Citation IDs referenced by cases",
+            "",
+        ]
+    )
+    if citation_ids:
+        lines.extend([f"- `{citation}`" for citation in citation_ids])
+    else:
+        lines.append("- _(none)_")
+
+    out.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return out
 
 
 def main() -> int:
     args = _build_parser().parse_args()
-    report_path = write_report(args.cases)
+    case_paths = resolve_case_paths(args.cases, args.scan_dir)
+    report_path = write_report(
+        case_paths,
+        out_path=args.out,
+        only_failures=args.only_failures,
+        fail_fast=args.fail_fast,
+    )
     print(f"wrote {report_path}")
     return 0
 

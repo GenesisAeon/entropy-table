@@ -69,6 +69,17 @@ Where `staging/cases/diffusion_simple.json` could be:
 
 ## Running tools
 
+### Running a directory of cases
+
+You can scan a directory (default: `staging/cases/`) and optionally combine with explicit `--case` arguments:
+
+```bash
+python -m tools.compute.case_runner --scan-dir staging/cases/
+python -m tools.compute.report --scan-dir staging/cases/ --only-failures --out outputs/compute_report.md
+```
+
+`--scan-dir` and repeated `--case` values are unioned with deduplication by exact path.
+
 Run the case runner:
 
 ```bash

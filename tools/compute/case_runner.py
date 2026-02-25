@@ -181,15 +181,60 @@ def run_cases(list_of_paths: list[str | Path]) -> list[dict[str, Any]]:
     return [run_case(load_case(path)) for path in list_of_paths]
 
 
+def discover_cases(root_dir: str | Path, *, pattern: str = "*.yaml") -> list[Path]:
+    """Discover case files under ``root_dir`` with deterministic ordering."""
+    root = Path(root_dir)
+    if not root.exists() or not root.is_dir():
+        return []
+
+    discovered: list[Path] = []
+    for path in root.rglob(pattern):
+        if not path.is_file():
+            continue
+        rel_path = path.relative_to(root)
+        if path.name.startswith(".") or any(part.startswith(".") for part in rel_path.parts):
+            continue
+        discovered.append(path)
+
+    return sorted(
+        discovered,
+        key=lambda path: (str(path.relative_to(root).parent), path.name),
+    )
+
+
+def resolve_case_paths(
+    explicit_cases: list[str | Path] | None,
+    scan_dir: str | Path | None,
+) -> list[Path]:
+    """Union explicit and scanned case paths using deterministic ordering."""
+    combined: dict[Path, Path] = {}
+
+    for item in explicit_cases or []:
+        path = Path(item)
+        combined[path.resolve()] = path
+
+    if scan_dir:
+        for item in discover_cases(scan_dir):
+            combined[item.resolve()] = item
+
+    return [combined[key] for key in sorted(combined)]
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run compute cases")
-    parser.add_argument("--case", action="append", dest="cases", required=True, help="Path to case YAML")
+    parser.add_argument("--case", action="append", dest="cases", help="Path to case YAML")
+    parser.add_argument(
+        "--scan-dir",
+        default="staging/cases/",
+        help="Directory of case YAML files to scan (default: staging/cases/)",
+    )
     return parser
 
 
 def main() -> int:
     args = _build_parser().parse_args()
-    results = run_cases(args.cases)
+    case_paths = resolve_case_paths(args.cases, args.scan_dir)
+    results = run_cases(case_paths)
     for item in results:
         print(f"{item['case_id']}: sigma={item['sigma']:.12g} status={item['status']}")
     return 0 if all(item["status"] == "pass" for item in results) else 1
