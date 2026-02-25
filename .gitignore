@@ -3,6 +3,7 @@ __pycache__/
 .pytest_cache/
 .venv/
 outputs/
+outputs/claims_report.md
 *.egg-info/
 
 cache/
