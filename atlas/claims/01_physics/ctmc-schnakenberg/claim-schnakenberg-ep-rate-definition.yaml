@@ -1,0 +1,20 @@
+id: schnakenberg-ep-rate-definition
+title: Schnakenberg entropy production rate for CTMC networks
+domain_ref: ctmc-schnakenberg
+claim_kind: definition
+statement:
+  text: The Schnakenberg entropy production rate is one-half the edge-current-weighted log ratio of forward to reverse edge fluxes.
+  latex: "\\sigma = \\frac{1}{2}\\sum_{i,j} J_{ij} \\ln\\frac{p_i w_{ij}}{p_j w_{ji}}"
+assumptions: []
+falsification:
+  must_fail_refs: []
+  notes: Definition validity is assessed by consistency with notation and CTMC edge orientation conventions.
+evidence:
+  citations:
+    - schnakenberg1976-rmp
+    - seifert2012-rpp
+  provenance: Standard network stochastic thermodynamics definition adopted in this atlas domain.
+status: review
+tags:
+  - definition
+  - ctmc

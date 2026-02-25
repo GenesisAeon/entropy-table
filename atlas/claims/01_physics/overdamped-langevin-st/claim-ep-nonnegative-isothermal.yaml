@@ -1,0 +1,30 @@
+id: ep-nonnegative-isothermal
+title: Isothermal overdamped total entropy production is nonnegative
+domain_ref: overdamped-langevin-st
+claim_kind: theorem
+statement:
+  text: Total entropy production is nonnegative for overdamped Markov diffusion under local detailed balance in an isothermal bath.
+  latex: "\\sigma(t)=\\int \\frac{J^\\top D^{-1}J}{p}dx \\ge 0"
+assumptions:
+  - Dynamics is Markovian overdamped diffusion with positive diffusion tensor.
+  - Local detailed balance links path asymmetry to heat exchange.
+  - Bath temperature is spatially uniform and time-independent.
+falsification:
+  must_fail_refs:
+    - equilibrium-zero-ep
+    - nonisothermal-naive-overdamped-closure
+  notes: Any accepted counterexample violating these hooks invalidates this claim in its stated scope.
+evidence:
+  citations:
+    - seifert2012-rpp
+    - lebowitz-spohn1999-jsp
+  cases:
+    - case-overdamped-fokker-planck-baseline
+  provenance: Derived from stochastic thermodynamics path probability ratio; encoded into atlas claim layer.
+status: review
+relations_touched:
+  - underdamped-to-overdamped-limit
+tags:
+  - stochastic-thermodynamics
+  - second-law
+notes: Scope excludes nonisothermal anomalies.

@@ -1,0 +1,23 @@
+id: overdamped-anomalous-ep-limitation
+title: Naive overdamped EP underestimates dissipation in nonuniform temperature fields
+domain_ref: overdamped-langevin-st
+claim_kind: limitation
+statement:
+  text: Naive overdamped entropy production underestimates true entropy production when temperature varies spatially because anomalous contributions are omitted.
+assumptions:
+  - Baseline overdamped formula assumes constant bath temperature.
+  - Coarse-grained elimination is applied without anomalous correction terms.
+falsification:
+  must_fail_refs:
+    - nonisothermal-naive-overdamped-closure
+  notes: If corrected overdamped formulas recover full dissipation for nonuniform T(x), this limitation does not apply in that regime.
+evidence:
+  citations:
+    - celani2012-prl
+  provenance: Comparative underdamped-versus-overdamped analysis in nonisothermal stochastic thermodynamics.
+status: review
+relations_touched:
+  - overdamped-nonisothermal-anomalous-ep
+tags:
+  - limitation
+  - nonisothermal
