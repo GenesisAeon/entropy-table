@@ -6,3 +6,10 @@ outputs/
 *.egg-info/
 
 cache/
+
+# metrics artifacts
+outputs/metrics.*
+cache/metrics.json
+
+# staging artifacts
+staging/
