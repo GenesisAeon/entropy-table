@@ -5,6 +5,29 @@ from common import ROOT, domain_files, load_yaml, relation_files
 OUTPUT_DIR = ROOT / "outputs"
 
 
+def _relation_marker(relation: dict) -> str:
+    relation_type = relation["relation_type"]
+    if relation_type == "composition":
+        composition = relation.get("composition", {})
+        kind = composition.get("kind", "?") if isinstance(composition, dict) else "?"
+        parts = composition.get("parts", []) if isinstance(composition, dict) else []
+        refs = [p.get("domain_ref", "?") for p in parts if isinstance(p, dict)] if isinstance(parts, list) else []
+        return f"composition:{kind} [{', '.join(refs) or 'none'}]"
+    if relation_type == "aggregation_rule":
+        aggregation = relation.get("aggregation", {})
+        rule_kind = aggregation.get("rule_kind", "?") if isinstance(aggregation, dict) else "?"
+        statement = aggregation.get("statement", {}) if isinstance(aggregation, dict) else {}
+        statement_text = statement.get("text", "") if isinstance(statement, dict) else ""
+        short = (statement_text[:48] + "...") if len(statement_text) > 48 else statement_text
+        return f"aggregation:{rule_kind} {short}".strip()
+    if relation_type == "regime_shift":
+        regime = relation.get("regime", {})
+        breaks = regime.get("breaks_assumptions", []) if isinstance(regime, dict) else []
+        count = len(breaks) if isinstance(breaks, list) else 0
+        return f"regime_shift:breaks={count}"
+    return relation_type
+
+
 def render_md(domains: list[dict], relations: list[dict]) -> str:
     out = ["# Entropy Atlas", "", "## Domains", ""]
     for d in domains:
@@ -18,10 +41,11 @@ def render_md(domains: list[dict], relations: list[dict]) -> str:
                 "",
             ]
         )
-    out.extend(["## Relations", "", "| id | type | source | target |", "|---|---|---|---|"])
+    out.extend(["## Relations", "", "| id | type | source | target | marker |", "|---|---|---|---|---|"])
     for r in relations:
-        suffix = " (composition)" if r["relation_type"] == "composition" else ""
-        out.append(f"| {r['id']} | {r['relation_type']}{suffix} | {r['source_domain_id']} | {r['target_domain_id']} |")
+        out.append(
+            f"| {r['id']} | {r['relation_type']} | {r['source_domain_id']} | {r['target_domain_id']} | {_relation_marker(r)} |"
+        )
     out.append("")
     return "\n".join(out)
 
@@ -38,7 +62,9 @@ def render_tex(domains: list[dict], relations: list[dict]) -> str:
         )
     out.extend(["\\subsection*{Relations}", "\\begin{itemize}"])
     for r in relations:
-        out.append(f"\\item {r['id']}: {r['source_domain_id']} $\\to$ {r['target_domain_id']} ({r['relation_type']})")
+        out.append(
+            f"\\item {r['id']}: {r['source_domain_id']} $\\to$ {r['target_domain_id']} ({r['relation_type']}; {_relation_marker(r)})"
+        )
     out.extend(["\\end{itemize}", ""])
     return "\n".join(out)
 

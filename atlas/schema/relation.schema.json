@@ -75,11 +75,113 @@
         "notes": {"type": "string"}
       }
     },
+    "channels": {
+      "type": "array",
+      "description": "Coupling/exchange channels (heat, work, mass, information, etc.)",
+      "minItems": 1,
+      "items": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"}
+    },
+    "composition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "parts"],
+      "properties": {
+        "kind": {"type": "string", "enum": ["subsystem_of", "component_of", "module_of"]},
+        "parts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["domain_ref"],
+            "properties": {
+              "domain_ref": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+              "role": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+              "weight": {"type": "number", "exclusiveMinimum": 0, "maximum": 1}
+            }
+          }
+        },
+        "notes": {"type": "string"}
+      }
+    },
+    "aggregation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target_quantity", "rule_kind", "statement"],
+      "properties": {
+        "target_quantity": {
+          "type": "string",
+          "enum": [
+            "entropy_production",
+            "entropy_flow",
+            "entropy_storage",
+            "free_energy",
+            "information_rate",
+            "other"
+          ]
+        },
+        "rule_kind": {
+          "type": "string",
+          "enum": [
+            "additive",
+            "subadditive",
+            "superadditive",
+            "upper_bound",
+            "lower_bound",
+            "inequality",
+            "noncomposable"
+          ]
+        },
+        "statement": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["text"],
+          "properties": {
+            "text": {"type": "string"},
+            "latex": {"type": "string"}
+          }
+        },
+        "conditions": {"type": "string"},
+        "failure_modes": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "regime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["breaks_assumptions"],
+      "properties": {
+        "breaks_assumptions": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "new_assumptions": {"type": "array", "items": {"type": "string"}},
+        "singular_limit": {"type": "boolean"}
+      }
+    },
     "parts": {
       "type": "array",
       "items": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"}
     }
   },
+  "allOf": [
+    {
+      "if": {"properties": {"relation_type": {"const": "composition"}}, "required": ["relation_type"]},
+      "then": {"required": ["composition"]}
+    },
+    {
+      "if": {"required": ["composition"]},
+      "then": {"properties": {"relation_type": {"const": "composition"}}}
+    },
+    {
+      "if": {"properties": {"relation_type": {"const": "aggregation_rule"}}, "required": ["relation_type"]},
+      "then": {"required": ["aggregation"]}
+    },
+    {
+      "if": {"required": ["aggregation"]},
+      "then": {"properties": {"relation_type": {"const": "aggregation_rule"}}}
+    },
+    {
+      "if": {"required": ["regime"]},
+      "then": {"properties": {"relation_type": {"const": "regime_shift"}}}
+    }
+  ],
   "$defs": {
     "testSpec": {
       "type": "object",
