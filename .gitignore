@@ -14,3 +14,7 @@ cache/metrics.json
 
 # staging artifacts
 staging/
+# release artifacts
+dist/
+outputs/snapshots/
+outputs/manifests/
