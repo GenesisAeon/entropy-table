@@ -53,6 +53,33 @@ Each claim YAML must follow this shape (enforced by `tools/validate_claims.py`).
 - For `draft`, `evidence.citations` may be empty.
 - `relations_touched` IDs, when present, must exist in `atlas/relations/`.
 
+## Compute Evidence (Claim ↔ Case binding)
+
+Claims and compute cases use a **soft linkage** convention so staging data remains optional.
+
+- Claim-side linkage uses `evidence.cases` and stores **case IDs**, not file paths.
+- Case-side linkage may use `claims: [claim_id, ...]` in `staging/cases/*.yaml`.
+- Validation always checks **syntax** for linkage IDs.
+- Validation does **not** require staging files or case existence by default.
+
+### ID formats
+
+- `claim_id` regex (kebab-case):
+  - `^[a-z0-9]+(?:-[a-z0-9]+)*$`
+- `case_id` regex (kebab-case + optional version suffix):
+  - `^[a-z0-9]+(?:-[a-z0-9]+)*(?:-v[0-9]+)?$`
+
+Examples:
+
+- `ctmc-3cycle-nonzero-v1`
+- `diffusion-ep-zero-current-v1`
+
+### Reporting behavior
+
+- Claim reports summarize stable/review claims with and without linked compute cases.
+- Compute reports can optionally scan case YAMLs and summarize claim IDs referenced by cases.
+- If atlas claims are present, compute report may emit warnings for unknown referenced claim IDs.
+
 ## Location and naming
 
 Claims are stored at:

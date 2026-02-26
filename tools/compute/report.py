@@ -3,11 +3,19 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import yaml
+
+TOOLS_ROOT = Path(__file__).resolve().parents[1]
+if str(TOOLS_ROOT) not in sys.path:
+    sys.path.insert(0, str(TOOLS_ROOT))
+
 from .case_runner import load_case, resolve_case_paths, run_case
+from bindings import CLAIM_ID_RE, parse_claim_ids_from_case_yaml
 
 DEFAULT_REPORT_PATH = Path("outputs/compute_report.md")
 
@@ -54,6 +62,32 @@ def _citation_ids(case_dicts: list[dict[str, Any]]) -> list[str]:
     return sorted(citations)
 
 
+def _claim_reference_counts(case_dicts: list[dict[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for case in case_dicts:
+        for claim_id in parse_claim_ids_from_case_yaml(case):
+            counts[claim_id] = counts.get(claim_id, 0) + 1
+    return counts
+
+
+def _discover_atlas_claim_ids() -> set[str]:
+    claims_root = Path("atlas/claims")
+    if not claims_root.exists() or not claims_root.is_dir():
+        return set()
+    ids: set[str] = set()
+    for path in sorted(claims_root.glob("**/*.yaml")):
+        try:
+            claim = yaml.safe_load(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if not isinstance(claim, dict):
+            continue
+        claim_id = claim.get("id")
+        if isinstance(claim_id, str) and claim_id:
+            ids.add(claim_id)
+    return ids
+
+
 def write_report(
     case_paths: list[str | Path],
     *,
@@ -85,6 +119,9 @@ def write_report(
 
     constraint_counts = _count_constraint_failures(results)
     citation_ids = _citation_ids(case_dicts)
+    claim_reference_counts = _claim_reference_counts(case_dicts)
+    invalid_claim_ids = sorted(claim_id for claim_id in claim_reference_counts if not CLAIM_ID_RE.match(claim_id))
+    atlas_claim_ids = _discover_atlas_claim_ids()
 
     out = Path(out_path)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -149,6 +186,26 @@ def write_report(
         lines.extend([f"- `{citation}`" for citation in citation_ids])
     else:
         lines.append("- _(none)_")
+
+    lines.extend(["", "### Claims referenced by cases", ""])
+    if claim_reference_counts:
+        lines.extend(["| claim_id | cases |", "|---|---:|"])
+        for claim_id in sorted(claim_reference_counts):
+            lines.append(f"| {claim_id} | {claim_reference_counts[claim_id]} |")
+    else:
+        lines.append("- _(none)_")
+
+    if invalid_claim_ids:
+        lines.extend(["", "Claim linkage warnings:", ""])
+        for claim_id in invalid_claim_ids:
+            lines.append(f"- invalid claim_id syntax in case linkage: `{claim_id}`")
+
+    if claim_reference_counts and atlas_claim_ids:
+        missing_from_atlas = sorted(claim_id for claim_id in claim_reference_counts if claim_id not in atlas_claim_ids)
+        if missing_from_atlas:
+            lines.extend(["", "Atlas existence warnings:", ""])
+            for claim_id in missing_from_atlas:
+                lines.append(f"- claim_id referenced by cases but not found in atlas/claims: `{claim_id}`")
 
     out.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return out

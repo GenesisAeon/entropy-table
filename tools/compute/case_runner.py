@@ -6,10 +6,17 @@ import argparse
 import hashlib
 import json
 import math
+import sys
 from pathlib import Path
 from typing import Any
 
 import yaml
+
+TOOLS_ROOT = Path(__file__).resolve().parents[1]
+if str(TOOLS_ROOT) not in sys.path:
+    sys.path.insert(0, str(TOOLS_ROOT))
+
+from bindings import parse_claim_ids_from_case_yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -161,6 +168,7 @@ def run_case(case_dict: dict[str, Any]) -> dict[str, Any]:
             "input_digest": _input_digest(input_data),
             "notes": case_dict.get("notes"),
             "citations": case_dict.get("citations", []),
+            "claims": parse_claim_ids_from_case_yaml(case_dict),
         }
     except CaseError as exc:
         errors.append(str(exc))
@@ -174,6 +182,7 @@ def run_case(case_dict: dict[str, Any]) -> dict[str, Any]:
             "input_digest": "",
             "notes": case_dict.get("notes"),
             "citations": case_dict.get("citations", []),
+            "claims": parse_claim_ids_from_case_yaml(case_dict),
         }
 
 
