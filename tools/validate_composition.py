@@ -9,6 +9,9 @@ from typing import Any
 import yaml
 
 DEFAULT_MAX_DEPTH_WARNING = 8
+LEGACY_COMPOSITION_WARNING = (
+    "legacy composition signal detected; please migrate to relation_type: composition + composition block"
+)
 
 
 def load_yaml(path: Path) -> dict[str, Any]:
@@ -37,7 +40,7 @@ def relation_tags(relation: dict[str, Any]) -> list[str]:
 
 
 def relation_channels(relation: dict[str, Any]) -> tuple[list[str], bool]:
-    for key in ("exchange_channels", "coupling_channels", "channels"):
+    for key in ("channels", "exchange_channels", "coupling_channels"):
         channels = relation.get(key)
         if channels is None:
             continue
@@ -47,10 +50,7 @@ def relation_channels(relation: dict[str, Any]) -> tuple[list[str], bool]:
     return [], False
 
 
-def is_composition_edge(relation: dict[str, Any]) -> bool:
-    if relation.get("relation_type") == "composition":
-        return True
-
+def _has_legacy_composition_signal(relation: dict[str, Any]) -> bool:
     if relation.get("composition") is True:
         return True
 
@@ -65,6 +65,11 @@ def is_composition_edge(relation: dict[str, Any]) -> bool:
         return True
 
     return False
+
+
+def classify_composition_relation(relation: dict[str, Any]) -> tuple[bool, bool]:
+    explicit = relation.get("relation_type") == "composition"
+    return explicit or _has_legacy_composition_signal(relation), explicit
 
 
 def find_cycle(adjacency: dict[str, list[str]]) -> list[str] | None:
@@ -126,6 +131,20 @@ def _format_cycle(cycle: list[str]) -> str:
     return " -> ".join(cycle)
 
 
+def _composition_domain_refs(relation: dict[str, Any]) -> list[str]:
+    composition = relation.get("composition")
+    if not isinstance(composition, dict):
+        return []
+    parts = composition.get("parts")
+    if not isinstance(parts, list):
+        return []
+    refs: list[str] = []
+    for part in parts:
+        if isinstance(part, dict) and isinstance(part.get("domain_ref"), str):
+            refs.append(part["domain_ref"])
+    return refs
+
+
 def validate_composition(atlas_root: Path, max_depth_warning: int = DEFAULT_MAX_DEPTH_WARNING) -> int:
     domains_by_id: dict[str, dict[str, Any]] = {}
     domain_path_by_id: dict[str, Path] = {}
@@ -161,12 +180,26 @@ def validate_composition(atlas_root: Path, max_depth_warning: int = DEFAULT_MAX_
             errors.append(f"{path}: could not parse relation YAML ({exc})")
             continue
 
-        if not is_composition_edge(relation):
+        is_composition, explicit = classify_composition_relation(relation)
+        if not is_composition:
             continue
 
         source = relation.get("source_domain_id")
         target = relation.get("target_domain_id")
         relation_id = str(relation.get("id", "<unknown-relation-id>"))
+
+        if explicit:
+            if not isinstance(relation.get("composition"), dict):
+                errors.append(
+                    f"{path}: relation '{relation_id}' has relation_type=composition but missing composition block"
+                )
+            part_refs = set(_composition_domain_refs(relation))
+            if part_refs and isinstance(source, str) and source not in part_refs:
+                warnings.append(
+                    f"{path}: relation '{relation_id}' composition.parts does not include source_domain_id '{source}'"
+                )
+        else:
+            warnings.append(f"{path}: relation '{relation_id}' {LEGACY_COMPOSITION_WARNING}")
 
         if source not in domains_by_id:
             errors.append(f"{path}: composition source_domain_id '{source}' does not exist")
@@ -229,10 +262,21 @@ def validate_composition(atlas_root: Path, max_depth_warning: int = DEFAULT_MAX_
             infos.append(f"{path}: relation '{relation_id}' has implicit channels")
             continue
 
-        source_channels = domains_by_id.get(source, {}).get("boundary", {}).get("exchange_channels", [])
-        target_channels = domains_by_id.get(target, {}).get("boundary", {}).get("exchange_channels", [])
-        source_channel_set = {str(channel) for channel in source_channels} if isinstance(source_channels, list) else set()
-        target_channel_set = {str(channel) for channel in target_channels} if isinstance(target_channels, list) else set()
+        source_boundary = domains_by_id.get(source, {}).get("boundary", {})
+        target_boundary = domains_by_id.get(target, {}).get("boundary", {})
+        source_channels = source_boundary.get("exchange_channels") if isinstance(source_boundary, dict) else None
+        target_channels = target_boundary.get("exchange_channels") if isinstance(target_boundary, dict) else None
+
+        source_declares = isinstance(source_channels, list)
+        target_declares = isinstance(target_channels, list)
+        if not source_declares or not target_declares:
+            warnings.append(
+                f"{path}: relation '{relation_id}' defines channels but one or both domains do not declare boundary.exchange_channels"
+            )
+            continue
+
+        source_channel_set = {str(channel) for channel in source_channels}
+        target_channel_set = {str(channel) for channel in target_channels}
 
         for channel in channels:
             if channel not in source_channel_set or channel not in target_channel_set:
