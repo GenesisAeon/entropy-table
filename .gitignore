@@ -3,6 +3,7 @@ __pycache__/
 .pytest_cache/
 .venv/
 outputs/
+outputs/atlas_health.md
 outputs/claims_report.md
 *.egg-info/
 

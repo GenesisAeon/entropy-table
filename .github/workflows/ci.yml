@@ -22,3 +22,5 @@ jobs:
         run: python tools/validate.py
       - name: Validate bibliography
         run: python tools/validate_bibliography.py
+      - name: Analyze atlas health
+        run: python tools/analyze_health.py --ci-check
