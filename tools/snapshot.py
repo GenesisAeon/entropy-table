@@ -37,6 +37,10 @@ def load_all_claims(atlas_root: Path = ATLAS) -> list[dict[str, Any]]:
     return _load_sorted_yaml(atlas_root / "claims")
 
 
+def load_bibliography(atlas_root: Path = ATLAS) -> dict[str, Any]:
+    return _load_yaml_object(atlas_root / "bibliography" / "refs.yaml")
+
+
 def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -59,6 +63,7 @@ def build_bundle(snapshot_id: str, atlas_root: Path = ATLAS, repo_root: Path = R
     domains = load_all_domains(atlas_root)
     relations = load_all_relations(atlas_root)
     claims = load_all_claims(atlas_root)
+    bibliography = load_bibliography(atlas_root)
     schema_hashes = compute_schema_hashes(atlas_root=atlas_root, repo_root=repo_root)
 
     bundle = {
@@ -68,6 +73,7 @@ def build_bundle(snapshot_id: str, atlas_root: Path = ATLAS, repo_root: Path = R
         "domains": domains,
         "relations": relations,
         "claims": claims,
+        "bibliography": bibliography,
     }
     bundle_bytes = canonical_json_bytes(bundle)
     bundle_sha256 = hashlib.sha256(bundle_bytes).hexdigest()

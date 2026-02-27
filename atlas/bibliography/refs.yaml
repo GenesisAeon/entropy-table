@@ -1,0 +1,93 @@
+c1:
+  authors:
+  - Entropy Atlas Team
+  doi: 10.0000/placeholder-c1
+  title: Placeholder citation used in golden fixtures
+  type: misc
+  year: 2024
+celani2012-prl:
+  authors:
+  - A. Celani
+  - S. Bo
+  - R. Eichhorn
+  - E. Aurell
+  doi: 10.1103/PhysRevLett.109.260603
+  title: Anomalous Thermodynamics at the Microscale
+  type: article
+  year: 2012
+crooks1999:
+  authors:
+  - G. E. Crooks
+  doi: 10.1103/PhysRevE.60.2721
+  title: Entropy production fluctuation theorem and the nonequilibrium work relation
+    for free energy differences
+  type: article
+  year: 1999
+esposito2012:
+  authors:
+  - M. Esposito
+  doi: 10.1016/j.physrep.2012.10.002
+  title: Stochastic thermodynamics
+  type: article
+  year: 2012
+gardiner2009-book:
+  authors:
+  - C. W. Gardiner
+  doi: 10.1007/978-3-540-70713-2
+  title: Stochastic Methods
+  type: book
+  year: 2009
+jarzynski1997:
+  authors:
+  - C. Jarzynski
+  doi: 10.1103/PhysRevLett.78.2690
+  title: Nonequilibrium Equality for Free Energy Differences
+  type: article
+  year: 1997
+lebowitz-spohn1999-jsp:
+  authors:
+  - J. L. Lebowitz
+  - H. Spohn
+  doi: 10.1023/A:1004589714161
+  title: A Gallavotti-Cohen-Type Symmetry in the Large Deviation Functional for Stochastic
+    Dynamics
+  type: article
+  year: 1999
+polettini2014:
+  authors:
+  - M. Polettini
+  - M. Esposito
+  doi: 10.1088/1742-5468/2014/10/P10033
+  title: A tale of two currents
+  type: article
+  year: 2014
+schnakenberg1976-rmp:
+  authors:
+  - J. Schnakenberg
+  doi: 10.1103/RevModPhys.48.571
+  title: Network theory of microscopic and macroscopic behavior of master equation
+    systems
+  type: article
+  year: 1976
+seifert2012-rpp:
+  authors:
+  - U. Seifert
+  doi: 10.1088/0034-4885/75/12/126001
+  title: Stochastic thermodynamics, fluctuation theorems and molecular machines
+  type: article
+  year: 2012
+sekimoto2010-book:
+  authors:
+  - K. Sekimoto
+  doi: 10.1007/978-3-642-05411-2
+  title: Stochastic Energetics
+  type: book
+  year: 2010
+spinney-ford2012-pre:
+  authors:
+  - R. E. Spinney
+  - I. J. Ford
+  doi: 10.1103/PhysRevE.85.051113
+  title: Entropy production in full phase space for continuous stochastic dynamics
+  type: article
+  year: 2012

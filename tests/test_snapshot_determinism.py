@@ -60,6 +60,18 @@ def test_sorting_by_id_in_bundle(tmp_path: Path) -> None:
     (atlas_root / "schema" / "domain.schema.json").write_text('{"type":"object"}', encoding="utf-8")
     (atlas_root / "schema" / "relation.schema.json").write_text('{"type":"object"}', encoding="utf-8")
 
+    (atlas_root / "bibliography").mkdir(parents=True)
+    (atlas_root / "bibliography" / "refs.yaml").write_text(
+        """ref-a:
+  type: article
+  title: A
+  authors: [Author]
+  year: 2024
+  doi: 10.0000/a
+""",
+        encoding="utf-8",
+    )
+
     docs_root = tmp_path / "docs"
     docs_root.mkdir()
     (docs_root / "claims.md").write_text("claim contract", encoding="utf-8")
@@ -71,3 +83,5 @@ def test_sorting_by_id_in_bundle(tmp_path: Path) -> None:
     assert [item["id"] for item in bundle["relations"]] == ["a-relation", "b-relation"]
     assert [item["id"] for item in bundle["claims"]] == ["a-claim", "b-claim"]
     assert [item["id"] for item in parsed["domains"]] == ["a-domain", "b-domain"]
+    assert "bibliography" in bundle
+    assert "ref-a" in parsed["bibliography"]
