@@ -20,3 +20,5 @@ jobs:
         run: pytest
       - name: Validate atlas
         run: python tools/validate.py
+      - name: Validate bibliography
+        run: python tools/validate_bibliography.py
