@@ -13,7 +13,7 @@ outputs/metrics.*
 cache/metrics.json
 
 # staging artifacts
-staging/
+staging/**/*.pdf
 # release artifacts
 dist/
 outputs/snapshots/
