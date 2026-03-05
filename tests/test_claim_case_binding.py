@@ -3,6 +3,7 @@ from __future__ import annotations
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -21,7 +22,7 @@ def run_validate_claims(*args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def make_claim(case_ids: list[str]) -> dict:
+def make_claim(cases: list[Any], status: str = "review") -> dict:
     return {
         "id": "tmp-valid-claim",
         "title": "Temporary valid claim",
@@ -32,10 +33,10 @@ def make_claim(case_ids: list[str]) -> dict:
         "falsification": {"must_fail_refs": ["detailed-balance-implies-zero-ep"]},
         "evidence": {
             "citations": ["schnakenberg1976-rmp"],
-            "cases": case_ids,
+            "cases": cases,
             "provenance": "Temporary test fixture.",
         },
-        "status": "review",
+        "status": status,
     }
 
 
@@ -43,6 +44,26 @@ def test_validate_claims_accepts_valid_case_id_format(tmp_path: Path) -> None:
     claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"
     claims_dir.mkdir(parents=True)
     payload = make_claim(["ctmc-3cycle-nonzero-v1", "diffusion-ep-zero-current-v1"])
+    (claims_dir / "claim-tmp-valid-claim.yaml").write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
+    assert result.returncode == 0
+    assert "Claim validation passed" in result.stdout
+
+
+def test_validate_claims_accepts_case_dict_binding(tmp_path: Path) -> None:
+    claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"
+    claims_dir.mkdir(parents=True)
+    payload = make_claim(
+        [
+            {
+                "id": "case-seifert-ctmc-ep-positivity",
+                "description": "Numerical verification.",
+                "compute_ref": "tools/compute/case_seifert_ctmc_ep.py",
+            }
+        ],
+        status="stable",
+    )
     (claims_dir / "claim-tmp-valid-claim.yaml").write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
 
     result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
@@ -75,7 +96,10 @@ def test_report_claims_includes_cases_count(monkeypatch) -> None:
                 "falsification": {"must_fail_refs": ["x"]},
                 "evidence": {
                     "citations": ["schnakenberg1976-rmp"],
-                    "cases": ["ctmc-3cycle-nonzero-v1", "ctmc-3cycle-zero-v1"],
+                    "cases": [
+                        {"id": "ctmc-3cycle-nonzero-v1", "compute_ref": "tools/compute/case_seifert_ctmc_ep.py"},
+                        "ctmc-3cycle-zero-v1",
+                    ],
                 },
             }
         ],
