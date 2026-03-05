@@ -76,3 +76,32 @@ def test_validate_claims_fails_stable_without_citations(tmp_path: Path) -> None:
     result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
     assert result.returncode != 0
     assert "status=stable" in result.stdout
+
+
+def test_validate_claims_fails_when_compute_ref_validation_fails(tmp_path: Path) -> None:
+    claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"
+    claims_dir.mkdir(parents=True)
+    payload = make_valid_claim()
+    payload["evidence"]["cases"] = [
+        {
+            "id": "ctmc-3cycle-nonzero-v1",
+            "compute_ref": "tools/compute/does_not_exist.py",
+        }
+    ]
+    (claims_dir / "claim-tmp-valid-claim.yaml").write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
+    assert result.returncode != 0
+    assert "compute_ref 'tools/compute/does_not_exist.py' failed validation" in result.stdout
+
+
+def test_validate_claims_fails_invalid_structured_case_without_id(tmp_path: Path) -> None:
+    claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"
+    claims_dir.mkdir(parents=True)
+    payload = make_valid_claim()
+    payload["evidence"]["cases"] = [{"description": "missing id"}]
+    (claims_dir / "claim-tmp-valid-claim.yaml").write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
+    assert result.returncode != 0
+    assert "evidence.cases must be a list of non-empty strings or objects with string id" in result.stdout
