@@ -3,18 +3,24 @@ title: CTMC Entropy Production Rate
 domain_ref: ctmc-seifert
 claim_kind: theorem
 statement:
-  text: The total entropy production rate equals system entropy-rate change plus medium entropy-rate change and is nonnegative.
-  latex: "\\sigma = \\dot{S}_{sys} + \\dot{S}_{med} \\ge 0"
+  text: The total entropy production rate equals system entropy-rate change plus medium
+    entropy-rate change and is nonnegative.
+  latex: \sigma = \dot{S}_{sys} + \dot{S}_{med} \ge 0
 assumptions:
-  - Markovian jump dynamics on a discrete state space.
-  - Local detailed balance holds for transition rates.
+- Markovian jump dynamics on a discrete state space.
+- Local detailed balance holds for transition rates.
 falsification:
   must_fail_refs:
-    - negative-ep-under-ldb
-  notes: Any valid counterexample with sustained negative total entropy production falsifies the claim.
+  - negative-ep-under-ldb
+  notes: Any valid counterexample with sustained negative total entropy production
+    falsifies the claim.
 evidence:
   citations:
-    - Seifert2012
-  cases: []
+  - Seifert2012
+  cases:
+  - id: case-seifert-ctmc-ep-positivity
+    description: Numerical verification of non-negative entropy production for a randomly
+      generated 3-state CTMC at steady state.
+    compute_ref: tools/compute/case_seifert_ctmc_ep.py
   provenance: Encoded from Seifert 2012 review formulation for CTMC stochastic thermodynamics.
-status: draft
+status: stable
