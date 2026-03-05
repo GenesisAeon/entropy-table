@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import argparse
+import runpy
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from common import ROOT, domain_files, load_yaml, relation_files
-from bindings import CASE_ID_RE, CLAIM_ID_RE, parse_case_ids_from_claim_yaml
+from bindings import CASE_ID_RE, CLAIM_ID_RE, parse_case_bindings_from_claim_yaml, parse_case_ids_from_claim_yaml
 
 CLAIM_KINDS = {"definition", "theorem", "lemma", "heuristic", "empirical", "limitation"}
 CLAIM_STATUS = {"draft", "review", "stable"}
@@ -38,6 +39,33 @@ def expect_string(claim: dict, key: str, errors: list[str], where: str) -> str |
         return None
     return value
 
+
+
+
+def _run_compute_ref(compute_ref: str) -> tuple[bool, str | None, str | None]:
+    script_path = ROOT / compute_ref
+    if not script_path.exists():
+        return False, f"compute_ref path does not exist: {compute_ref}", None
+
+    try:
+        module_globals = runpy.run_path(str(script_path))
+    except ModuleNotFoundError as exc:
+        return True, None, f"skipping compute_ref '{compute_ref}' due to missing dependency: {exc}"
+    except Exception as exc:
+        return False, f"failed to load compute_ref '{compute_ref}': {exc}", None
+
+    verify_claim = module_globals.get("verify_claim")
+    if not callable(verify_claim):
+        return False, f"compute_ref '{compute_ref}' does not define callable verify_claim()", None
+
+    try:
+        result = verify_claim()
+    except Exception as exc:
+        return False, f"compute_ref '{compute_ref}' raised during verify_claim(): {exc}", None
+
+    if result is False:
+        return False, f"compute_ref '{compute_ref}' returned False", None
+    return True, None, None
 
 def validate_claim_file(
     path: Path,
@@ -120,11 +148,25 @@ def validate_claim_file(
             citations = citation_refs
 
         cases = evidence.get("cases")
-        if cases is not None and (
-            not isinstance(cases, list) or not all(isinstance(item, str) and item.strip() for item in cases)
-        ):
-            errors.append(f"{where}: evidence.cases must be a list of non-empty strings when provided")
+        if cases is not None and not isinstance(cases, list):
+            errors.append(f"{where}: evidence.cases must be a list when provided")
         else:
+            for item in cases or []:
+                if isinstance(item, str) and item.strip():
+                    continue
+                if isinstance(item, dict):
+                    case_id = item.get("id")
+                    description = item.get("description")
+                    compute_ref = item.get("compute_ref")
+                    if not isinstance(case_id, str) or not case_id.strip():
+                        errors.append(f"{where}: evidence.cases dict entries must include non-empty string id")
+                    if description is not None and (not isinstance(description, str) or not description.strip()):
+                        errors.append(f"{where}: evidence.cases entry description must be a non-empty string when provided")
+                    if compute_ref is not None and (not isinstance(compute_ref, str) or not compute_ref.strip()):
+                        errors.append(f"{where}: evidence.cases entry compute_ref must be a non-empty string when provided")
+                    continue
+                errors.append(f"{where}: evidence.cases entries must be strings or objects")
+
             for case_id in parse_case_ids_from_claim_yaml(claim):
                 if not CASE_ID_RE.match(case_id):
                     errors.append(f"{where}: evidence.cases contains invalid case id '{case_id}'")
@@ -140,6 +182,17 @@ def validate_claim_file(
         errors.append(f"{where}: evidence.citations must contain at least one citation for status={status}")
     elif status in {"review", "stable"} and len(parse_case_ids_from_claim_yaml(claim)) < 1:
         warnings.append(f"{where}: review/stable claim has 0 evidence.cases")
+
+    if status == "stable":
+        for binding in parse_case_bindings_from_claim_yaml(claim):
+            if not binding.compute_ref:
+                warnings.append(f"{where}: stable claim case '{binding.id}' has no compute_ref")
+                continue
+            ok, error, warning = _run_compute_ref(binding.compute_ref)
+            if warning is not None:
+                warnings.append(f"{where}: {warning}")
+            if not ok and error is not None:
+                errors.append(f"{where}: {error}")
 
     relations_touched = claim.get("relations_touched")
     if relations_touched is not None:
