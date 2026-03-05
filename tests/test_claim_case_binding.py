@@ -21,7 +21,7 @@ def run_validate_claims(*args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def make_claim(case_ids: list[str]) -> dict:
+def make_claim(case_items: list[object]) -> dict:
     return {
         "id": "tmp-valid-claim",
         "title": "Temporary valid claim",
@@ -32,7 +32,7 @@ def make_claim(case_ids: list[str]) -> dict:
         "falsification": {"must_fail_refs": ["detailed-balance-implies-zero-ep"]},
         "evidence": {
             "citations": ["schnakenberg1976-rmp"],
-            "cases": case_ids,
+            "cases": case_items,
             "provenance": "Temporary test fixture.",
         },
         "status": "review",
@@ -50,6 +50,24 @@ def test_validate_claims_accepts_valid_case_id_format(tmp_path: Path) -> None:
     assert "Claim validation passed" in result.stdout
 
 
+def test_validate_claims_accepts_structured_case_item(tmp_path: Path) -> None:
+    claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"
+    claims_dir.mkdir(parents=True)
+    payload = make_claim(
+        [
+            {
+                "id": "ctmc-3cycle-nonzero-v1",
+                "description": "Structured case payload",
+            }
+        ]
+    )
+    (claims_dir / "claim-tmp-valid-claim.yaml").write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
+    assert result.returncode == 0
+    assert "Claim validation passed" in result.stdout
+
+
 def test_validate_claims_rejects_invalid_case_id_format(tmp_path: Path) -> None:
     claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"
     claims_dir.mkdir(parents=True)
@@ -59,6 +77,17 @@ def test_validate_claims_rejects_invalid_case_id_format(tmp_path: Path) -> None:
     result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
     assert result.returncode != 0
     assert "evidence.cases contains invalid case id" in result.stdout
+
+
+def test_validate_claims_rejects_invalid_structured_case_shape(tmp_path: Path) -> None:
+    claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"
+    claims_dir.mkdir(parents=True)
+    payload = make_claim([{"description": "missing id"}])
+    (claims_dir / "claim-tmp-valid-claim.yaml").write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
+    assert result.returncode != 0
+    assert "evidence.cases must be a list of non-empty strings or objects with non-empty string id" in result.stdout
 
 
 def test_report_claims_includes_cases_count(monkeypatch) -> None:
