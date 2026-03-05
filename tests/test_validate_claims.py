@@ -76,3 +76,44 @@ def test_validate_claims_fails_stable_without_citations(tmp_path: Path) -> None:
     result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
     assert result.returncode != 0
     assert "status=stable" in result.stdout
+
+
+def test_validate_claims_executes_compute_ref_for_review_claim(tmp_path: Path) -> None:
+    script_path = ROOT / "tools" / "compute" / "tmp_case_pass.py"
+    script_path.write_text("def verify_claim():\n    return True\n", encoding="utf-8")
+    try:
+        claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"
+        claims_dir.mkdir(parents=True)
+        payload = make_valid_claim()
+        payload["evidence"]["cases"] = [
+            {"id": "ctmc-3cycle-nonzero-v1", "compute_ref": "tools/compute/tmp_case_pass.py"}
+        ]
+        (claims_dir / "claim-tmp-valid-claim.yaml").write_text(
+            yaml.safe_dump(payload, sort_keys=False), encoding="utf-8"
+        )
+
+        result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
+        assert result.returncode == 0
+    finally:
+        script_path.unlink(missing_ok=True)
+
+
+def test_validate_claims_fails_when_compute_ref_returns_false(tmp_path: Path) -> None:
+    script_path = ROOT / "tools" / "compute" / "tmp_case_fail.py"
+    script_path.write_text("def verify_claim():\n    return False\n", encoding="utf-8")
+    try:
+        claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"
+        claims_dir.mkdir(parents=True)
+        payload = make_valid_claim()
+        payload["evidence"]["cases"] = [
+            {"id": "ctmc-3cycle-nonzero-v1", "compute_ref": "tools/compute/tmp_case_fail.py"}
+        ]
+        (claims_dir / "claim-tmp-valid-claim.yaml").write_text(
+            yaml.safe_dump(payload, sort_keys=False), encoding="utf-8"
+        )
+
+        result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
+        assert result.returncode != 0
+        assert "failed validation" in result.stdout
+    finally:
+        script_path.unlink(missing_ok=True)
