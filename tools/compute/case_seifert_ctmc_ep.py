@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import math
+import random
 from dataclasses import dataclass
-
-import numpy as np
 
 
 @dataclass(frozen=True)
@@ -13,43 +13,73 @@ class CaseResult:
     passed: bool
 
 
-def _random_irreducible_generator(rng: np.random.Generator, n_states: int) -> np.ndarray:
-    rates = rng.uniform(0.1, 2.0, size=(n_states, n_states))
-    np.fill_diagonal(rates, 0.0)
-    generator = rates.copy()
-    np.fill_diagonal(generator, -np.sum(rates, axis=1))
-    return generator
+def _random_irreducible_generator(seed: int, n_states: int) -> list[list[float]]:
+    rng = random.Random(seed)
+    rates = [[0.0 for _ in range(n_states)] for _ in range(n_states)]
+    for i in range(n_states):
+        for j in range(n_states):
+            if i == j:
+                continue
+            rates[i][j] = rng.uniform(0.1, 2.0)
+
+    for i in range(n_states):
+        rates[i][i] = -sum(rates[i][j] for j in range(n_states) if j != i)
+    return rates
 
 
-def _stationary_distribution(generator: np.ndarray) -> np.ndarray:
-    n_states = generator.shape[0]
-    system = generator.T.copy()
-    system[-1, :] = 1.0
-    rhs = np.zeros(n_states)
+def _solve_linear_system(a: list[list[float]], b: list[float]) -> list[float]:
+    n = len(a)
+    aug = [row[:] + [b_i] for row, b_i in zip(a, b)]
+
+    for col in range(n):
+        pivot = max(range(col, n), key=lambda r: abs(aug[r][col]))
+        if abs(aug[pivot][col]) < 1e-15:
+            raise ValueError("Singular system in stationary distribution solve")
+        aug[col], aug[pivot] = aug[pivot], aug[col]
+
+        div = aug[col][col]
+        aug[col] = [value / div for value in aug[col]]
+
+        for row in range(n):
+            if row == col:
+                continue
+            factor = aug[row][col]
+            aug[row] = [curr - factor * lead for curr, lead in zip(aug[row], aug[col])]
+
+    return [aug[i][-1] for i in range(n)]
+
+
+def _stationary_distribution(generator: list[list[float]]) -> list[float]:
+    n_states = len(generator)
+    system = [[generator[j][i] for j in range(n_states)] for i in range(n_states)]
+    system[-1] = [1.0 for _ in range(n_states)]
+    rhs = [0.0 for _ in range(n_states)]
     rhs[-1] = 1.0
-    stationary = np.linalg.solve(system, rhs)
-    stationary = np.clip(stationary, 0.0, None)
-    stationary = stationary / stationary.sum()
-    return stationary
+
+    stationary = _solve_linear_system(system, rhs)
+    stationary = [max(0.0, value) for value in stationary]
+    total = sum(stationary)
+    if total <= 0.0:
+        raise ValueError("Invalid stationary distribution normalization")
+    return [value / total for value in stationary]
 
 
-def _seifert_entropy_production(generator: np.ndarray, stationary: np.ndarray) -> float:
-    n_states = generator.shape[0]
+def _seifert_entropy_production(generator: list[list[float]], stationary: list[float]) -> float:
+    n_states = len(generator)
     sigma = 0.0
     for i in range(n_states):
         for j in range(n_states):
             if i == j:
                 continue
-            forward = generator[i, j] * stationary[j]
-            backward = generator[j, i] * stationary[i]
+            forward = generator[i][j] * stationary[j]
+            backward = generator[j][i] * stationary[i]
             current = forward - backward
-            sigma += current * np.log(forward / backward)
+            sigma += current * math.log(forward / backward)
     return 0.5 * float(sigma)
 
 
 def _run_single(seed: int) -> CaseResult:
-    rng = np.random.default_rng(seed)
-    generator = _random_irreducible_generator(rng, n_states=3)
+    generator = _random_irreducible_generator(seed=seed, n_states=3)
     stationary = _stationary_distribution(generator)
     sigma = _seifert_entropy_production(generator, stationary)
     return CaseResult(sigma=sigma, passed=sigma >= -1e-12)

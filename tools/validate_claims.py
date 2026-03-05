@@ -181,10 +181,10 @@ def validate_claim_file(
     elif status in {"review", "stable"} and len(parse_case_ids_from_claim_yaml(claim)) < 1:
         warnings.append(f"{where}: review/stable claim has 0 evidence.cases")
 
-    if status == "stable":
+    if status in {"stable", "review"}:
         for binding in parse_case_bindings_from_claim_yaml(claim):
             if not binding.compute_ref:
-                warnings.append(f"{where}: stable claim case '{binding.id}' has no compute_ref")
+                warnings.append(f"{where}: {status} claim case '{binding.id}' has no compute_ref")
                 continue
             ok, error = _run_compute_ref(binding.compute_ref)
             if not ok and error is not None:

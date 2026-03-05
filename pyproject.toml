@@ -12,7 +12,6 @@ dependencies = [
   "pyyaml",
   "jsonschema",
   "pytest",
-  "numpy",
 ]
 
 [tool.pytest.ini_options]

@@ -38,7 +38,7 @@ def parse_case_bindings_from_claim_yaml(claim: dict[str, Any]) -> list[ClaimCase
     parsed: list[ClaimCaseBinding] = []
     for item in raw:
         if isinstance(item, str) and item.strip():
-            parsed.append(ClaimCaseBinding(id=item))
+            parsed.append(ClaimCaseBinding(id=item.strip()))
             continue
         if not isinstance(item, dict):
             continue
@@ -49,7 +49,7 @@ def parse_case_bindings_from_claim_yaml(claim: dict[str, Any]) -> list[ClaimCase
         compute_ref = item.get("compute_ref")
         parsed.append(
             ClaimCaseBinding(
-                id=case_id,
+                id=case_id.strip(),
                 description=description if isinstance(description, str) and description.strip() else None,
                 compute_ref=compute_ref if isinstance(compute_ref, str) and compute_ref.strip() else None,
             )
