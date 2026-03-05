@@ -97,9 +97,14 @@ def _validate_domain_or_relation(path: Path, entry_type: str, atlas_root: Path) 
 def _validate_claim(path: Path, target_dir: str, atlas_root: Path) -> list[str]:
     domain_ids = _discover_domain_ids(atlas_root)
     relation_ids = _discover_relation_ids(atlas_root)
+    payload = load_yaml(path)
+    domain_ref = payload.get("domain_ref") if isinstance(payload, dict) else None
 
     with tempfile.TemporaryDirectory() as tmp:
-        temp_path = Path(tmp) / target_dir / path.name
+        if isinstance(domain_ref, str) and domain_ref.strip():
+            temp_path = Path(tmp) / target_dir / domain_ref / path.name
+        else:
+            temp_path = Path(tmp) / target_dir / path.name
         temp_path.parent.mkdir(parents=True, exist_ok=True)
         temp_path.write_text(path.read_text(encoding="utf-8"), encoding="utf-8")
         _, errors, _warnings = validate_claim_file(temp_path, domain_ids, relation_ids)
@@ -145,7 +150,15 @@ def ingest_draft(
         joined = "\n".join(f" - {err}" for err in errors)
         return False, f"Ingestion failed with {len(errors)} error(s):\n{joined}", None
 
-    target_path = atlas_root / f"{entry_type}s" / target_dir / input_file.name
+    if entry_type == "claim":
+        payload = load_yaml(input_file)
+        domain_ref = payload.get("domain_ref") if isinstance(payload, dict) else None
+        if isinstance(domain_ref, str) and domain_ref.strip():
+            target_path = atlas_root / f"{entry_type}s" / target_dir / domain_ref / input_file.name
+        else:
+            target_path = atlas_root / f"{entry_type}s" / target_dir / input_file.name
+    else:
+        target_path = atlas_root / f"{entry_type}s" / target_dir / input_file.name
     if target_path.exists() and not force:
         return False, f"Target already exists: {target_path} (use --force to overwrite)", target_path
 

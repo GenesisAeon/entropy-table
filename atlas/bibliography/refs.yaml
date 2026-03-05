@@ -91,3 +91,10 @@ spinney-ford2012-pre:
   title: Entropy production in full phase space for continuous stochastic dynamics
   type: article
   year: 2012
+Seifert2012:
+  type: article
+  title: "Stochastic thermodynamics, fluctuation theorems and molecular machines"
+  authors: ["Udo Seifert"]
+  year: 2012
+  doi: "10.1088/0034-4885/75/12/126001"
+
