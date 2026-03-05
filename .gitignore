@@ -16,6 +16,10 @@ cache/metrics.json
 # staging artifacts
 staging/**/*.pdf
 # release artifacts
-dist/
+dist/*
+!dist/packs/
+dist/packs/*.zip
+dist/packs/*.tar.gz
+!dist/packs/.gitkeep
 outputs/snapshots/
 outputs/manifests/

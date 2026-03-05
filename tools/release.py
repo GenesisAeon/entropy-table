@@ -3,14 +3,19 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+from datetime import datetime, timezone
 from pathlib import Path
+import shutil
 import sys
+import tempfile
 from typing import Any
+import zipfile
 
 import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from analyze_health import analyze_health, render_markdown  # noqa: E402
 from snapshot import (  # noqa: E402
     ATLAS,
     ROOT,
@@ -23,11 +28,101 @@ from snapshot import (  # noqa: E402
 )
 
 FREEZE_MANIFEST_PATH = ROOT / "dist" / "freeze" / "freeze_manifest.json"
+PACKS_DIR = ROOT / "dist" / "packs"
 
 
 def _write_json(path: Path, data: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(canonical_json_bytes(data))
+
+
+def _safe_version(version: str) -> str:
+    return "".join(ch if ch.isalnum() or ch in {"-", "_", "."} else "-" for ch in version).strip("-")
+
+
+def _build_manifest_txt(version: str, created_utc: str) -> str:
+    return (
+        "Entropy Table Release Dataset Pack\n"
+        "==================================\n\n"
+        f"Version: {version}\n"
+        f"Created (UTC): {created_utc}\n\n"
+        "This archive is a Zenodo-ready release pack containing:\n"
+        "- bundle.json: canonical validated graph snapshot\n"
+        "- atlas_health.md: graph health and coverage report\n"
+        "- refs.yaml: bibliography entries for claims/evidence\n"
+        "- MANIFEST.txt: this release metadata summary\n"
+    )
+
+
+def _write_release_files(version: str, build_dir: Path) -> None:
+    created_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    snapshot_id = generate_snapshot_id()
+
+    bundle, bundle_bytes, bundle_sha256 = build_bundle(snapshot_id=snapshot_id, atlas_root=ATLAS, repo_root=ROOT)
+    bundle_path = build_dir / "bundle.json"
+    bundle_path.write_bytes(bundle_bytes)
+
+    health_report = analyze_health(ATLAS)
+    (build_dir / "atlas_health.md").write_text(render_markdown(health_report), encoding="utf-8")
+
+    shutil.copy2(ATLAS / "bibliography" / "refs.yaml", build_dir / "refs.yaml")
+
+    (build_dir / "MANIFEST.txt").write_text(_build_manifest_txt(version=version, created_utc=created_utc), encoding="utf-8")
+
+    # Keep existing snapshot-style artifacts for reproducibility metadata.
+    readme_path = build_dir / "README.md"
+    manifest_path = build_dir / "MANIFEST.json"
+    readme_path.write_text(
+        build_readme(
+            snapshot_id=snapshot_id,
+            bundle_sha256=bundle_sha256,
+            counts=bundle["counts"],
+            schema_hashes=bundle["schema"],
+            bundle=bundle,
+        ),
+        encoding="utf-8",
+    )
+    _write_json(
+        manifest_path,
+        build_manifest(
+            snapshot_id=snapshot_id,
+            bundle_sha256=bundle_sha256,
+            counts=bundle["counts"],
+            schema_hashes=bundle["schema"],
+            bundle_path=bundle_path,
+            readme_path=readme_path,
+            manifest_path=manifest_path,
+            repo_root=ROOT,
+        ),
+    )
+
+
+def create_release_pack(version: str, out_dir: Path = PACKS_DIR) -> Path:
+    clean_version = _safe_version(version)
+    if not clean_version:
+        raise ValueError("version must include at least one alphanumeric character")
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    with tempfile.TemporaryDirectory(prefix=f"entropy-table-pack-{clean_version}-") as tmp:
+        build_dir = Path(tmp) / f"entropy-table-pack-{clean_version}"
+        build_dir.mkdir(parents=True, exist_ok=True)
+        _write_release_files(version=version, build_dir=build_dir)
+
+        archive_base = out_dir / f"entropy-table-pack-{clean_version}"
+        archive_path = Path(shutil.make_archive(str(archive_base), "zip", root_dir=build_dir))
+
+    return archive_path
+
+
+def cmd_pack(args: argparse.Namespace) -> int:
+    out_dir = Path(args.out)
+    if not out_dir.is_absolute():
+        out_dir = ROOT / out_dir
+
+    archive_path = create_release_pack(version=args.version, out_dir=out_dir)
+    print(f"Wrote release pack: {archive_path}")
+    return 0
 
 
 def cmd_snapshot(args: argparse.Namespace) -> int:
@@ -175,8 +270,16 @@ def cmd_freeze_update(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Release tooling for deterministic scientific snapshots")
-    subparsers = parser.add_subparsers(dest="command", required=True)
+    parser = argparse.ArgumentParser(description="Release tooling for dataset packs and deterministic snapshots")
+    parser.add_argument("--version", help="Release version used to name the dataset pack (e.g. v1.0.0)")
+    parser.add_argument("--out", default="dist/packs", help="Output directory for release packs")
+
+    subparsers = parser.add_subparsers(dest="command")
+
+    pack_parser = subparsers.add_parser("pack", help="Build Zenodo-ready dataset pack")
+    pack_parser.add_argument("--version", required=True, help="Release version used to name the dataset pack")
+    pack_parser.add_argument("--out", default="dist/packs", help="Output directory for release packs")
+    pack_parser.set_defaults(func=cmd_pack)
 
     snapshot_parser = subparsers.add_parser("snapshot", help="Build deterministic snapshot bundle")
     snapshot_parser.add_argument("--id", dest="snapshot_id", default=None, help="Snapshot identifier (UTC timestamp if omitted)")
@@ -204,8 +307,15 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    args_list = argv if argv is not None else sys.argv[1:]
     parser = build_parser()
-    args = parser.parse_args(argv)
+    args = parser.parse_args(args_list)
+
+    if getattr(args, "command", None) is None:
+        if args.version:
+            return cmd_pack(args)
+        parser.error("either provide a subcommand or pass --version to build a release pack")
+
     return args.func(args)
 
 
