@@ -21,7 +21,7 @@ def run_validate_claims(*args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def make_claim(case_ids: list[str]) -> dict:
+def make_claim(case_ids: list[str | dict]) -> dict:
     return {
         "id": "tmp-valid-claim",
         "title": "Temporary valid claim",
@@ -49,6 +49,26 @@ def test_validate_claims_accepts_valid_case_id_format(tmp_path: Path) -> None:
     assert result.returncode == 0
     assert "Claim validation passed" in result.stdout
 
+
+
+
+def test_validate_claims_accepts_structured_case_format(tmp_path: Path) -> None:
+    claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"
+    claims_dir.mkdir(parents=True)
+    payload = make_claim(
+        [
+            {
+                "id": "ctmc-3cycle-nonzero-v1",
+                "description": "Structured case object",
+                "compute_ref": "tools/compute/case_seifert_ctmc_ep.py",
+            }
+        ]
+    )
+    (claims_dir / "claim-tmp-valid-claim.yaml").write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
+    assert result.returncode == 0
+    assert "Claim validation passed" in result.stdout
 
 def test_validate_claims_rejects_invalid_case_id_format(tmp_path: Path) -> None:
     claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"

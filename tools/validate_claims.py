@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import sys
 from pathlib import Path
 
@@ -120,14 +121,24 @@ def validate_claim_file(
             citations = citation_refs
 
         cases = evidence.get("cases")
-        if cases is not None and (
-            not isinstance(cases, list) or not all(isinstance(item, str) and item.strip() for item in cases)
-        ):
-            errors.append(f"{where}: evidence.cases must be a list of non-empty strings when provided")
-        else:
-            for case_id in parse_case_ids_from_claim_yaml(claim):
-                if not CASE_ID_RE.match(case_id):
-                    errors.append(f"{where}: evidence.cases contains invalid case id '{case_id}'")
+        if cases is not None:
+            valid_case_items = isinstance(cases, list) and all(
+                (isinstance(item, str) and item.strip())
+                or (
+                    isinstance(item, dict)
+                    and isinstance(item.get("id"), str)
+                    and item.get("id").strip()
+                )
+                for item in cases
+            )
+            if not valid_case_items:
+                errors.append(
+                    f"{where}: evidence.cases must be a list of non-empty strings or objects with string id when provided"
+                )
+            else:
+                for case_id in parse_case_ids_from_claim_yaml(claim):
+                    if not CASE_ID_RE.match(case_id):
+                        errors.append(f"{where}: evidence.cases contains invalid case id '{case_id}'")
 
         provenance = evidence.get("provenance")
         if not isinstance(provenance, str) or not provenance.strip():
@@ -140,6 +151,31 @@ def validate_claim_file(
         errors.append(f"{where}: evidence.citations must contain at least one citation for status={status}")
     elif status in {"review", "stable"} and len(parse_case_ids_from_claim_yaml(claim)) < 1:
         warnings.append(f"{where}: review/stable claim has 0 evidence.cases")
+
+    if status in {"review", "stable"} and isinstance(evidence, dict):
+        cases = evidence.get("cases")
+        if isinstance(cases, list):
+            for item in cases:
+                if not isinstance(item, dict):
+                    continue
+                compute_ref = item.get("compute_ref")
+                if not isinstance(compute_ref, str) or not compute_ref.strip():
+                    continue
+                script_path = ROOT / compute_ref
+                try:
+                    spec = importlib.util.spec_from_file_location(f"claim_compute_{script_path.stem}", script_path)
+                    if spec is None or spec.loader is None:
+                        raise RuntimeError("unable to load module spec")
+                    module = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(module)
+                    verify_claim = getattr(module, "verify_claim", None)
+                    if not callable(verify_claim):
+                        raise AttributeError("verify_claim() not found")
+                    result = verify_claim()
+                    if result is False:
+                        errors.append(f"{where}: compute_ref '{compute_ref}' failed validation")
+                except Exception:
+                    errors.append(f"{where}: compute_ref '{compute_ref}' failed validation")
 
     relations_touched = claim.get("relations_touched")
     if relations_touched is not None:
