@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import sys
 from pathlib import Path
 
@@ -11,6 +12,44 @@ from bindings import CASE_ID_RE, CLAIM_ID_RE, parse_case_ids_from_claim_yaml
 
 CLAIM_KINDS = {"definition", "theorem", "lemma", "heuristic", "empirical", "limitation"}
 CLAIM_STATUS = {"draft", "review", "stable"}
+
+
+def _is_valid_case_entry(item: object) -> bool:
+    if isinstance(item, str):
+        return bool(item.strip())
+    if isinstance(item, dict):
+        case_id = item.get("id")
+        return isinstance(case_id, str) and bool(case_id.strip())
+    return False
+
+
+def _execute_compute_ref(ref: str, where: str, errors: list[str]) -> None:
+    script_path = ROOT / ref
+    if not script_path.is_file():
+        errors.append(f"{where}: compute_ref '{ref}' does not exist")
+        return
+
+    module_name = f"compute_ref_{script_path.stem}"
+    try:
+        spec = importlib.util.spec_from_file_location(module_name, script_path)
+        if spec is None or spec.loader is None:
+            errors.append(f"{where}: compute_ref '{ref}' could not be loaded")
+            return
+
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        verify_fn = getattr(module, "verify_claim", None)
+        if not callable(verify_fn):
+            errors.append(f"{where}: compute_ref '{ref}' must define callable verify_claim()")
+            return
+
+        result = verify_fn()
+        if result is False:
+            errors.append(f"{where}: compute_ref '{ref}' failed validation")
+    except Exception:
+        errors.append(f"{where}: compute_ref '{ref}' failed validation")
+
 
 
 def discover_domain_ids() -> set[str]:
@@ -121,13 +160,22 @@ def validate_claim_file(
 
         cases = evidence.get("cases")
         if cases is not None and (
-            not isinstance(cases, list) or not all(isinstance(item, str) and item.strip() for item in cases)
+            not isinstance(cases, list) or not all(_is_valid_case_entry(item) for item in cases)
         ):
-            errors.append(f"{where}: evidence.cases must be a list of non-empty strings when provided")
+            errors.append(
+                f"{where}: evidence.cases must be a list of non-empty strings or objects with string 'id' when provided"
+            )
         else:
             for case_id in parse_case_ids_from_claim_yaml(claim):
                 if not CASE_ID_RE.match(case_id):
                     errors.append(f"{where}: evidence.cases contains invalid case id '{case_id}'")
+
+            if isinstance(cases, list) and claim.get("status") in {"stable", "review"}:
+                for case in cases:
+                    if isinstance(case, dict):
+                        compute_ref = case.get("compute_ref")
+                        if isinstance(compute_ref, str) and compute_ref.strip():
+                            _execute_compute_ref(compute_ref.strip(), where, errors)
 
         provenance = evidence.get("provenance")
         if not isinstance(provenance, str) or not provenance.strip():

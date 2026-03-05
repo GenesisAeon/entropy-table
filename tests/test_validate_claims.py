@@ -76,3 +76,47 @@ def test_validate_claims_fails_stable_without_citations(tmp_path: Path) -> None:
     result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
     assert result.returncode != 0
     assert "status=stable" in result.stdout
+
+
+def test_validate_claims_executes_compute_ref_for_review(tmp_path: Path) -> None:
+    claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"
+    claims_dir.mkdir(parents=True)
+
+    compute_script = ROOT / "tools" / "compute" / "case_tmp_compute_ref.py"
+    compute_script.write_text("def verify_claim():\n    return True\n", encoding="utf-8")
+
+    try:
+        payload = make_valid_claim()
+        payload["evidence"]["cases"] = [
+            {"id": "ctmc-3cycle-nonzero-v1", "compute_ref": "tools/compute/case_tmp_compute_ref.py"}
+        ]
+        (claims_dir / "claim-tmp-valid-claim.yaml").write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+        result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
+        assert result.returncode == 0
+        assert "Claim validation passed" in result.stdout
+    finally:
+        if compute_script.exists():
+            compute_script.unlink()
+
+
+def test_validate_claims_fails_when_compute_ref_returns_false(tmp_path: Path) -> None:
+    claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"
+    claims_dir.mkdir(parents=True)
+
+    compute_script = ROOT / "tools" / "compute" / "case_tmp_compute_ref_fail.py"
+    compute_script.write_text("def verify_claim():\n    return False\n", encoding="utf-8")
+
+    try:
+        payload = make_valid_claim()
+        payload["evidence"]["cases"] = [
+            {"id": "ctmc-3cycle-nonzero-v1", "compute_ref": "tools/compute/case_tmp_compute_ref_fail.py"}
+        ]
+        (claims_dir / "claim-tmp-valid-claim.yaml").write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+        result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
+        assert result.returncode != 0
+        assert "failed validation" in result.stdout
+    finally:
+        if compute_script.exists():
+            compute_script.unlink()
