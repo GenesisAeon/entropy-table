@@ -180,6 +180,10 @@
     {
       "if": {"required": ["regime"]},
       "then": {"properties": {"relation_type": {"const": "regime_shift"}}}
+    },
+    {
+      "if": {"properties": {"relation_type": {"const": "regime_shift"}}, "required": ["relation_type"]},
+      "then": {"required": ["regime"]}
     }
   ],
   "$defs": {

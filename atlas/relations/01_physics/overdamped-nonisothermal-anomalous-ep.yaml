@@ -46,6 +46,15 @@ citations:
     title: Stochastic thermodynamics, fluctuation theorems and molecular machines
     year: 2012
     authors: [U. Seifert]
+regime:
+  breaks_assumptions:
+    - isothermal-bath
+    - naive-overdamped-ep-formula
+  new_assumptions:
+    - spatially-varying-temperature
+    - spatially-varying-friction
+    - multiplicative-noise-convention-required
+  singular_limit: true
 status: review
 context:
   tags: [overdamped-langevin, nonisothermal, anomalous-ep, regime-shift]
