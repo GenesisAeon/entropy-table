@@ -1,0 +1,77 @@
+id: biochemical-cme-to-ctmc
+source_domain_id: biochemical-cme
+target_domain_id: ctmc-schnakenberg
+relation_type: composition
+channels: [chemical, heat, matter]
+conditions:
+  text: The biochemical CME is a structural specialization of the abstract CTMC/Schnakenberg framework. The CTMC state space is identified with molecule-count vectors n, edges correspond to elementary reaction channels rho, and forward/reverse transition rates are fixed by mass-action kinetics and local detailed balance with the thermal bath. Under this identification, the Schnakenberg entropy production formula reduces exactly to the CME entropy production over reaction currents.
+  params:
+    state_space_map: "CTMC states i <-> molecule-count vectors n in N^S"
+    edge_map: "CTMC edges (i,j) <-> forward/reverse pairs (n, n+nu_rho) for reaction rho"
+    rate_map: "w_ij = w_{+rho}(n) via mass-action: k_{+rho} * prod_s n_s! / (n_s - nu_rho^-)! / Omega^(|nu_rho^-|-1)"
+    local_detailed_balance: "ln[w_{+rho}(n) / w_{-rho}(n+nu_rho)] = -Delta_rho G^0 / k_B T + sum_s nu_rho_s * mu_s^chemostat / k_B T"
+    volume_scaling: "Propensities scale with system volume Omega as required by mass-action stoichiometry"
+    wegscheider_as_cycle_affinity: "Wegscheider balance <-> zero cycle affinity A_C = sum_{rho in C} ln[k_{+rho}/k_{-rho}] = 0 for all independent cycles C"
+preserved:
+  - non-negativity of total entropy production (second law)
+  - Schnakenberg decomposition of EP into edge-current times log-ratio of forward and reverse fluxes
+  - detailed-balance equivalence with vanishing EP and vanishing all edge currents
+  - path-probability ratio interpretation of irreversibility (Gallavotti-Cohen symmetry)
+  - additivity of EP contributions across independent reaction channels
+lost:
+  - abstract graph topology (replaced by stoichiometric constraint on which transitions are reachable from a given state)
+  - freedom to assign arbitrary rates; rates are now constrained by mass-action and local detailed balance
+  - graph-theoretic cycle-current decomposition in terms of spanning-tree bases (cycles are now reaction cycles, not arbitrary graph cycles)
+expected_effect:
+  direction: context_dependent
+  inequality: "sigma_CME(n) = sigma_CTMC(i=n) when transition rates are assigned by mass-action kinetics; equality is exact, not approximate"
+  description: The mapping is an exact embedding, not an approximation. The CME EP formula is strictly a special case of the Schnakenberg formula with mass-action-constrained rates. No information about EP is gained or lost; the biochemical structure adds Wegscheider constraints that reduce the space of admissible rate matrices compared to the unconstrained CTMC.
+must_fail_tests:
+  - id: unconstrained-ctmc-rates-in-cme
+    statement: Treat a biochemical CME as an arbitrary CTMC and assign transition rates that violate mass-action scaling with system volume, then equate the resulting EP to the physical CME EP.
+    expected_outcome: reject
+    rationale: Mass-action volume scaling is required for the CME interpretation; arbitrary CTMC rates without this constraint do not correspond to any physical reaction network and yield spurious EP values.
+    citations: [seifert2012-rpp, rao2016-prx]
+    severity: hard
+  - id: wegscheider-as-optional-constraint
+    statement: Apply the Schnakenberg formula to a closed biochemical cycle with rate constants that violate Wegscheider balance and interpret the resulting nonzero EP as physical steady-state dissipation without an external driving mechanism.
+    expected_outcome: reject
+    rationale: In the absence of chemostats or external energy input, Wegscheider balance is mandatory. Nonzero EP from rate constants that violate it signals a thermodynamically inconsistent model, not physical dissipation.
+    citations: [rao2016-prx]
+    severity: hard
+  - id: cycle-affinity-without-chemostat
+    statement: Identify a nonzero Schnakenberg cycle affinity in a closed biochemical network and conclude that the network sustains entropy production without any external reservoir or driving.
+    expected_outcome: reject
+    rationale: Nonzero cycle affinities in a closed network violate Wegscheider conditions and imply thermodynamic inconsistency of the rate constants; a physical system cannot spontaneously generate cycle affinities.
+    citations: [rao2016-prx, seifert2012-rpp]
+    severity: hard
+composition:
+  kind: component_of
+  parts:
+    - domain_ref: biochemical-cme
+      role: mass-action-specialization
+      weight: 1.0
+  notes: Each elementary reaction channel in the biochemical CME contributes additively to the total Schnakenberg EP, and maps exactly onto a pair of directed edges in the abstract CTMC graph. The Wegscheider conditions are the biochemical instantiation of the general condition that the rate matrix derives from a thermodynamically consistent potential.
+citations:
+  - id: seifert2012-rpp
+    type: doi
+    ref: "10.1088/0034-4885/75/12/126001"
+    title: Stochastic thermodynamics, fluctuation theorems and molecular machines
+    year: 2012
+    authors: [U. Seifert]
+  - id: rao2016-prx
+    type: doi
+    ref: "10.1103/PhysRevX.6.041064"
+    title: "Nonequilibrium Thermodynamics of Chemical Reaction Networks: Wisdom from Stochastic Thermodynamics"
+    year: 2016
+    authors: [R. Rao, M. Esposito]
+  - id: schnakenberg1976-rmp
+    type: doi
+    ref: "10.1103/RevModPhys.48.571"
+    title: Network theory of microscopic and macroscopic behavior of master equation systems
+    year: 1976
+    authors: [J. Schnakenberg]
+status: draft
+context:
+  tags: [cme, biochemical, mass-action, wegscheider, schnakenberg, ctmc, composition]
+  notes: This relation is an exact structural embedding, not an approximation or limit. The biochemical CME inherits all Schnakenberg EP properties and adds stoichiometric and Wegscheider constraints on admissible rate matrices.
