@@ -76,3 +76,22 @@ def test_validate_claims_fails_stable_without_citations(tmp_path: Path) -> None:
     result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
     assert result.returncode != 0
     assert "status=stable" in result.stdout
+
+
+def test_validate_claims_runs_structured_compute_and_handles_failure(tmp_path: Path) -> None:
+    claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"
+    claims_dir.mkdir(parents=True)
+    payload = make_valid_claim()
+    payload["status"] = "stable"
+    payload["evidence"]["cases"] = [
+        {
+            "id": "ctmc-3cycle-nonzero-v1",
+            "description": "fixture",
+            "compute_ref": "tools/compute/does_not_exist.py",
+        }
+    ]
+    (claims_dir / "claim-tmp-valid-claim.yaml").write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
+    assert result.returncode != 0
+    assert "compute verification failed" in result.stdout
