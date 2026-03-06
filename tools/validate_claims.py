@@ -120,14 +120,23 @@ def validate_claim_file(
             citations = citation_refs
 
         cases = evidence.get("cases")
-        if cases is not None and (
-            not isinstance(cases, list) or not all(isinstance(item, str) and item.strip() for item in cases)
-        ):
-            errors.append(f"{where}: evidence.cases must be a list of non-empty strings when provided")
-        else:
-            for case_id in parse_case_ids_from_claim_yaml(claim):
-                if not CASE_ID_RE.match(case_id):
-                    errors.append(f"{where}: evidence.cases contains invalid case id '{case_id}'")
+        if cases is not None:
+            if not isinstance(cases, list):
+                errors.append(f"{where}: evidence.cases must be a list when provided")
+            else:
+                for item in cases:
+                    if isinstance(item, str):
+                        if not item.strip():
+                            errors.append(f"{where}: evidence.cases must not contain empty strings")
+                    elif isinstance(item, dict):
+                        if "id" not in item or not isinstance(item["id"], str) or not item["id"].strip():
+                            errors.append(f"{where}: structured cases must contain a valid string 'id'")
+                    else:
+                        errors.append(f"{where}: evidence.cases items must be strings or dicts")
+
+                for case_id in parse_case_ids_from_claim_yaml(claim):
+                    if not CASE_ID_RE.match(case_id):
+                        errors.append(f"{where}: evidence.cases contains invalid case id '{case_id}'")
 
         provenance = evidence.get("provenance")
         if not isinstance(provenance, str) or not provenance.strip():
@@ -173,6 +182,24 @@ def validate_claim_file(
     if isinstance(domain_ref, str) and domain_ref:
         if path.parent.name != domain_ref:
             errors.append(f"{where}: parent directory must match domain_ref '{domain_ref}'")
+
+    if status in {"review", "stable"} and isinstance(evidence, dict) and isinstance(evidence.get("cases"), list):
+        for item in evidence["cases"]:
+            if isinstance(item, dict) and "compute_ref" in item:
+                compute_ref = item["compute_ref"]
+                script_path = ROOT / compute_ref
+                if not script_path.exists():
+                    errors.append(f"{where}: compute_ref '{compute_ref}' file not found")
+                    continue
+                try:
+                    import importlib.util
+                    spec = importlib.util.spec_from_file_location("dynamic_case", str(script_path))
+                    mod = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(mod)
+                    if not getattr(mod, "verify_claim", lambda: False)():
+                        errors.append(f"{where}: compute_ref '{compute_ref}' verify_claim() failed or missing")
+                except Exception as e:
+                    errors.append(f"{where}: compute_ref '{compute_ref}' execution crashed: {e}")
 
     return claim_id, errors, warnings
 
