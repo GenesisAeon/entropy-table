@@ -12,13 +12,30 @@ boundary:
   closure_type: open
   exchange_channels: [heat, matter, information]
   external_entities:
+    - id: thermal-bath
+      role: reservoir
+      notes: "Shared thermal reservoir coupling network edges. Edge-level heat dissipation: dQ_e = k_B T * ln(w_ij / w_ji) per net transition (local detailed balance)."
     - id: controller
       role: driver
       notes: synthetic controller
+    - id: information-bus
+      role: measurement
+      notes: "Inter-module information channel carrying transfer entropy T(X_k -> X_l). Contributes to network-level information budget in the generalized second law: Sigma_net >= -sum_kl T(X_k->X_l)."
 entropy_accounting:
   storage_term: {symbol: Ssys, latex: "S_{sys}", units: "J/K", notes: placeholder}
   production_term: {symbol: Sigmasys, latex: "\\Sigma_{sys}", units: "J/K", notes: placeholder}
   flux_term: {symbol: Phisys, latex: "\\Phi_{sys}", units: "J/K", notes: placeholder}
+  decomposition_terms:
+    - id: edge-heat-dissipation
+      name: Network edge heat dissipation
+      latex: "\\dot{Q}_{\\mathrm{net}} = k_B T \\sum_{e} J_e \\ln\\frac{w_{ij}}{w_{ji}}"
+      notes: "Total heat dissipated across all network edges per unit time via local detailed balance. Linked to heat exchange_channel."
+      epistemic_status: heuristic
+    - id: transfer-entropy-term
+      name: Inter-module transfer entropy
+      latex: "T(X_k \\to X_l) = \\sum_{x_k, x_l} p\\,\\ln\\frac{p(x_l^{t+1}|x_l^t,x_k^t)}{p(x_l^{t+1}|x_l^t)}"
+      notes: "Directed information flow between network modules; enters network-level generalized second law correction. Linked to information exchange_channel."
+      epistemic_status: heuristic
   accounting_status: proxy
 entropy_definition:
   symbol: Ssys

@@ -16,7 +16,10 @@ boundary:
   external_entities:
     - id: thermal-bath
       role: reservoir
-      notes: placeholder reservoir
+      notes: "Isothermal reservoir at temperature T. Heat exchanged as dQ = F·dx − dU (Sekimoto stochastic energetics)."
+    - id: measurement-apparatus
+      role: measurement
+      notes: "Feedback measurement device acquiring outcome M correlated with system state X. Contributes mutual-information term I(X;M) in the generalized second law: Sigma_tot >= -I(X;M)."
 entropy_accounting:
   storage_term: {symbol: S, latex: "S", units: "J/K", notes: placeholder}
   production_term: {symbol: Sigmadot, latex: "\\dot{\\Sigma}", units: "J/(K s)", notes: placeholder}
@@ -26,6 +29,16 @@ entropy_accounting:
       name: Medium contribution
       latex: "\\dot{\\Sigma}_{m}"
       notes: placeholder
+      epistemic_status: heuristic
+    - id: heat-flow-term
+      name: Stochastic heat flow to reservoir
+      latex: "\\dot{Q} = -T\\,\\dot{S}_{\\mathrm{env}}"
+      notes: "Heat dissipated to the thermal bath per unit time; sign convention: positive Q leaves the system (Sekimoto). Linked to heat exchange_channel."
+      epistemic_status: empirical
+    - id: information-feedback-term
+      name: Measurement mutual-information correction
+      latex: "\\dot{I}(X;M) = \\frac{d}{dt}I(X_t;M_t)"
+      notes: "Rate of mutual information gained from the measurement apparatus. Enters generalized second law as Sigma_tot + I_dot >= 0 (Sagawa–Ueda). Linked to information exchange_channel."
       epistemic_status: heuristic
   accounting_status: approximate
 entropy_definition:
