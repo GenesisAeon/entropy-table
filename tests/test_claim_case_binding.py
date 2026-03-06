@@ -3,6 +3,7 @@ from __future__ import annotations
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -21,7 +22,7 @@ def run_validate_claims(*args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def make_claim(case_ids: list[str]) -> dict:
+def make_claim(cases: list[Any]) -> dict:
     return {
         "id": "tmp-valid-claim",
         "title": "Temporary valid claim",
@@ -32,7 +33,7 @@ def make_claim(case_ids: list[str]) -> dict:
         "falsification": {"must_fail_refs": ["detailed-balance-implies-zero-ep"]},
         "evidence": {
             "citations": ["schnakenberg1976-rmp"],
-            "cases": case_ids,
+            "cases": cases,
             "provenance": "Temporary test fixture.",
         },
         "status": "review",
@@ -43,6 +44,25 @@ def test_validate_claims_accepts_valid_case_id_format(tmp_path: Path) -> None:
     claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"
     claims_dir.mkdir(parents=True)
     payload = make_claim(["ctmc-3cycle-nonzero-v1", "diffusion-ep-zero-current-v1"])
+    (claims_dir / "claim-tmp-valid-claim.yaml").write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
+    assert result.returncode == 0
+    assert "Claim validation passed" in result.stdout
+
+
+def test_validate_claims_accepts_mixed_case_entries(tmp_path: Path) -> None:
+    claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"
+    claims_dir.mkdir(parents=True)
+    payload = make_claim(
+        [
+            "ctmc-3cycle-nonzero-v1",
+            {
+                "id": "diffusion-ep-zero-current-v1",
+                "description": "Object style case entry",
+            },
+        ]
+    )
     (claims_dir / "claim-tmp-valid-claim.yaml").write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
 
     result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))

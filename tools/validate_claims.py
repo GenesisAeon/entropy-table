@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import sys
 from pathlib import Path
+from types import ModuleType
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -11,6 +14,60 @@ from bindings import CASE_ID_RE, CLAIM_ID_RE, parse_case_ids_from_claim_yaml
 
 CLAIM_KINDS = {"definition", "theorem", "lemma", "heuristic", "empirical", "limitation"}
 CLAIM_STATUS = {"draft", "review", "stable"}
+
+
+def _load_compute_module(module_path: Path) -> ModuleType:
+    spec = importlib.util.spec_from_file_location(module_path.stem, module_path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"could not load module spec for {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _run_case_compute(case_entry: dict[str, Any], where: str, errors: list[str]) -> None:
+    case_id = case_entry.get("id", "<unknown-case>")
+    compute_ref = case_entry.get("compute_ref")
+    if compute_ref is None:
+        return
+    if not isinstance(compute_ref, str) or not compute_ref.strip():
+        errors.append(f"{where}: evidence.cases entry '{case_id}' has invalid compute_ref")
+        return
+
+    module_path = ROOT / compute_ref
+    try:
+        module = _load_compute_module(module_path)
+        verify = getattr(module, "verify_claim", None)
+        if not callable(verify):
+            raise RuntimeError("verify_claim() was not found")
+        result = verify()
+        if result is not True:
+            raise RuntimeError(f"verify_claim() returned {result!r}")
+    except Exception as exc:
+        errors.append(f"{where}: compute verification failed for case '{case_id}' ({compute_ref}): {exc}")
+
+
+def _validate_case_entry(case: Any, where: str, errors: list[str]) -> None:
+    if isinstance(case, str):
+        if not case.strip():
+            errors.append(f"{where}: evidence.cases string entries must be non-empty")
+        return
+
+    if not isinstance(case, dict):
+        errors.append(f"{where}: evidence.cases entries must be strings or objects")
+        return
+
+    case_id = case.get("id")
+    if not isinstance(case_id, str) or not case_id.strip():
+        errors.append(f"{where}: evidence.cases object entries must include non-empty string id")
+
+    description = case.get("description")
+    if description is not None and (not isinstance(description, str) or not description.strip()):
+        errors.append(f"{where}: evidence.cases.description must be a non-empty string when provided")
+
+    compute_ref = case.get("compute_ref")
+    if compute_ref is not None and (not isinstance(compute_ref, str) or not compute_ref.strip()):
+        errors.append(f"{where}: evidence.cases.compute_ref must be a non-empty string when provided")
 
 
 def discover_domain_ids() -> set[str]:
@@ -120,11 +177,11 @@ def validate_claim_file(
             citations = citation_refs
 
         cases = evidence.get("cases")
-        if cases is not None and (
-            not isinstance(cases, list) or not all(isinstance(item, str) and item.strip() for item in cases)
-        ):
-            errors.append(f"{where}: evidence.cases must be a list of non-empty strings when provided")
-        else:
+        if cases is not None and not isinstance(cases, list):
+            errors.append(f"{where}: evidence.cases must be a list when provided")
+        elif isinstance(cases, list):
+            for case in cases:
+                _validate_case_entry(case, where, errors)
             for case_id in parse_case_ids_from_claim_yaml(claim):
                 if not CASE_ID_RE.match(case_id):
                     errors.append(f"{where}: evidence.cases contains invalid case id '{case_id}'")
@@ -140,6 +197,13 @@ def validate_claim_file(
         errors.append(f"{where}: evidence.citations must contain at least one citation for status={status}")
     elif status in {"review", "stable"} and len(parse_case_ids_from_claim_yaml(claim)) < 1:
         warnings.append(f"{where}: review/stable claim has 0 evidence.cases")
+
+    if status in {"review", "stable"} and not errors and isinstance(evidence, dict):
+        raw_cases = evidence.get("cases")
+        if isinstance(raw_cases, list):
+            for case in raw_cases:
+                if isinstance(case, dict) and "compute_ref" in case:
+                    _run_case_compute(case, where, errors)
 
     relations_touched = claim.get("relations_touched")
     if relations_touched is not None:
