@@ -31,7 +31,7 @@ validate-all: validate
 # ── Testing ───────────────────────────────────────────────────────────────────
 
 test:
-	pytest
+	$(PYTHON) -m pytest
 
 # ── Atlas health & metrics ────────────────────────────────────────────────────
 
