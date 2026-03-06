@@ -76,3 +76,72 @@ def test_validate_claims_fails_stable_without_citations(tmp_path: Path) -> None:
     result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
     assert result.returncode != 0
     assert "status=stable" in result.stdout
+
+
+def test_validate_claims_executes_compute_ref_for_review_claim(tmp_path: Path) -> None:
+    atlas_root = tmp_path / "atlas"
+    claims_dir = atlas_root / "claims" / "01_physics" / "ctmc-schnakenberg"
+    claims_dir.mkdir(parents=True)
+    domains_dir = atlas_root / "domains" / "01_physics"
+    domains_dir.mkdir(parents=True)
+    (domains_dir / "ctmc-schnakenberg.yaml").write_text("id: ctmc-schnakenberg\n", encoding="utf-8")
+
+    payload = make_valid_claim()
+    payload["evidence"]["cases"] = [
+        {
+            "id": "case-compute-pass-v1",
+            "compute_ref": str(tmp_path / "tools" / "compute" / "case_dummy_pass.py"),
+            "description": "pass",
+        }
+    ]
+    (claims_dir / "claim-tmp-valid-claim.yaml").write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    tools_dir = tmp_path / "tools" / "compute"
+    tools_dir.mkdir(parents=True)
+    (tools_dir / "case_dummy_pass.py").write_text("def verify_claim():\n    return True\n", encoding="utf-8")
+
+    result = run_validate_claims("--claims-root", str(atlas_root / "claims"), "--atlas-root", str(atlas_root))
+    assert result.returncode == 0
+    assert "Claim validation passed" in result.stdout
+
+
+def test_validate_claims_reports_compute_ref_errors(tmp_path: Path) -> None:
+    atlas_root = tmp_path / "atlas"
+    claims_dir = atlas_root / "claims" / "01_physics" / "ctmc-schnakenberg"
+    claims_dir.mkdir(parents=True)
+    domains_dir = atlas_root / "domains" / "01_physics"
+    domains_dir.mkdir(parents=True)
+    (domains_dir / "ctmc-schnakenberg.yaml").write_text("id: ctmc-schnakenberg\n", encoding="utf-8")
+
+    payload = make_valid_claim()
+    payload["status"] = "stable"
+    payload["evidence"]["cases"] = [
+        {
+            "id": "case-compute-fail-v1",
+            "compute_ref": str(tmp_path / "tools" / "compute" / "case_dummy_fail.py"),
+            "description": "fail",
+        }
+    ]
+    (claims_dir / "claim-tmp-valid-claim.yaml").write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    tools_dir = tmp_path / "tools" / "compute"
+    tools_dir.mkdir(parents=True)
+    (tools_dir / "case_dummy_fail.py").write_text(
+        "def verify_claim():\n    raise RuntimeError('boom')\n", encoding="utf-8"
+    )
+
+    result = run_validate_claims("--claims-root", str(atlas_root / "claims"), "--atlas-root", str(atlas_root))
+    assert result.returncode != 0
+    assert "compute evidence failed" in result.stdout
+
+
+def test_validate_claims_rejects_invalid_case_object_shape(tmp_path: Path) -> None:
+    claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"
+    claims_dir.mkdir(parents=True)
+    payload = make_valid_claim()
+    payload["evidence"]["cases"] = [{"id": "", "compute_ref": 12}]
+    (claims_dir / "claim-tmp-valid-claim.yaml").write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
+    assert result.returncode != 0
+    assert "strings or case objects" in result.stdout

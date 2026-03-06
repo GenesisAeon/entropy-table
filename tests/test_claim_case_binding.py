@@ -21,7 +21,7 @@ def run_validate_claims(*args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def make_claim(case_ids: list[str]) -> dict:
+def make_claim(case_ids: list[object]) -> dict:
     return {
         "id": "tmp-valid-claim",
         "title": "Temporary valid claim",
@@ -85,3 +85,22 @@ def test_report_claims_includes_cases_count(monkeypatch) -> None:
 
     assert "| Claim ID | Title | Kind | Status | cases_count | cases_preview |" in report
     assert "| stable-linked-claim | Stable linked | theorem | stable | 2 | ctmc-3cycle-nonzero-v1, ctmc-3cycle-zero-v1 |" in report
+
+
+def test_validate_claims_accepts_mixed_case_formats(tmp_path: Path) -> None:
+    claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"
+    claims_dir.mkdir(parents=True)
+    payload = make_claim(
+        [
+            "ctmc-3cycle-nonzero-v1",
+            {
+                "id": "case-seifert-ctmc-ep-positivity",
+                "description": "Fixture without compute hook.",
+            },
+        ]
+    )
+    (claims_dir / "claim-tmp-valid-claim.yaml").write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
+    assert result.returncode == 0
+    assert "Claim validation passed" in result.stdout
