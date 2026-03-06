@@ -12,7 +12,7 @@ scope:
 boundary:
   closure_type: effectively_closed
   closure_notes: Heat leakage is ignored over the selected short window.
-  exchange_channels: [heat, work]
+  exchange_channels: [heat, work, information]
   external_entities:
     - id: thermal-bath
       role: reservoir
