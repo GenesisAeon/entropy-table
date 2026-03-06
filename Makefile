@@ -31,7 +31,7 @@ validate-all: validate
 # ── Testing ───────────────────────────────────────────────────────────────────
 
 test:
-	pytest
+	$(PYTHON) -m pytest
 
 # ── Atlas health & metrics ────────────────────────────────────────────────────
 
@@ -49,11 +49,11 @@ render:
 # ── Visualisation ─────────────────────────────────────────────────────────────
 
 visualize:
-	$(PYTHON) $(TOOLS)/visualize.py --format mermaid --output docs/atlas_graph.mmd
+	$(PYTHON) -m tools.visualize --format mermaid --output docs/atlas_graph.mmd
 	@echo "Mermaid graph written to docs/atlas_graph.mmd"
 
 visualize-dot:
-	$(PYTHON) $(TOOLS)/visualize.py --format dot --output docs/atlas_graph.dot
+	$(PYTHON) -m tools.visualize --format dot --output docs/atlas_graph.dot
 	@echo "Graphviz DOT graph written to docs/atlas_graph.dot"
 
 # ── Release ───────────────────────────────────────────────────────────────────
