@@ -14,7 +14,14 @@ def parse_case_ids_from_claim_yaml(claim: dict[str, Any]) -> list[str]:
     raw = evidence.get("cases")
     if not isinstance(raw, list):
         return []
-    return [item for item in raw if isinstance(item, str) and item.strip()]
+
+    case_ids = []
+    for item in raw:
+        if isinstance(item, str) and item.strip():
+            case_ids.append(item.strip())
+        elif isinstance(item, dict) and "id" in item and isinstance(item["id"], str):
+            case_ids.append(item["id"].strip())
+    return case_ids
 
 
 def parse_claim_ids_from_case_yaml(case: dict[str, Any]) -> list[str]:
@@ -22,4 +29,3 @@ def parse_claim_ids_from_case_yaml(case: dict[str, Any]) -> list[str]:
     if not isinstance(raw, list):
         return []
     return [item for item in raw if isinstance(item, str) and item.strip()]
-
