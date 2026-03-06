@@ -1,0 +1,170 @@
+id: biochemical-cme
+title: Biochemical Reaction Networks (Chemical Master Equation)
+system_type:
+  primary: biochemical_networks
+  tags: [cme, biochemical, mass-action, wegscheider, schnakenberg]
+  notes: Stochastic thermodynamics of well-stirred chemical reaction networks mapped to population-state Markov jump processes via mass-action kinetics.
+entropy_quantity_kind: production_rate
+epistemic_status: theorem
+scope:
+  applies_to:
+    - Well-stirred dilute chemical reaction mixtures modeled as stochastic jump processes on discrete molecule-count state spaces.
+    - Systems where transition rates depend on population states via mass-action kinetics and reaction stoichiometry.
+    - Open chemical networks driven by chemostatted boundary species acting as thermodynamic reservoirs.
+  does_not_apply:
+    - Reaction-diffusion systems where spatial inhomogeneities are explicitly resolved (use RDME or PDE-based descriptions instead).
+    - Extremely dense media where the dilute ideal-solution approximations underlying mass-action kinetics fail.
+boundary:
+  closure_type: open
+  exchange_channels: [chemical, heat, matter]
+  external_entities:
+    - id: chemostat-reservoirs
+      role: reservoir
+      notes: Provide or absorb specific chemical species at constant chemical potential, exchanging matter and chemical work to sustain nonequilibrium steady states.
+    - id: thermal-bath
+      role: reservoir
+      notes: Ensures local thermal equilibrium for all elementary reactions, absorbing reaction heat and fixing the temperature entering local detailed balance ratios.
+entropy_accounting:
+  storage_term:
+    symbol: dSsysdt
+    latex: "\\frac{dS_{\\mathrm{sys}}}{dt} = -k_B \\sum_{\\mathbf{n}} \\dot{p}(\\mathbf{n}) \\ln p(\\mathbf{n})"
+    units: "k_B/s"
+    notes: Time derivative of the Shannon entropy over the discrete chemical state space of molecule-count vectors n.
+  production_term:
+    symbol: sigma
+    latex: "\\sigma = \\frac{1}{2} \\sum_{\\mathbf{n}, \\rho} \\left( p(\\mathbf{n}) w_{+\\rho}(\\mathbf{n}) - p(\\mathbf{n}+\\boldsymbol{\\nu}_\\rho) w_{-\\rho}(\\mathbf{n}+\\boldsymbol{\\nu}_\\rho) \\right) \\ln \\frac{p(\\mathbf{n}) w_{+\\rho}(\\mathbf{n})}{p(\\mathbf{n}+\\boldsymbol{\\nu}_\\rho) w_{-\\rho}(\\mathbf{n}+\\boldsymbol{\\nu}_\\rho)} \\ge 0"
+    units: "k_B/s"
+    notes: Total irreversible entropy production summed over all forward and reverse elementary reaction channels rho with stoichiometric step vectors nu_rho.
+  flux_term:
+    symbol: dsmeddt
+    latex: "\\dot S_{\\mathrm{med}} = \\sum_{\\mathbf{n}, \\rho} J_{\\rho}(\\mathbf{n}) \\ln \\frac{w_{+\\rho}(\\mathbf{n})}{w_{-\\rho}(\\mathbf{n}+\\boldsymbol{\\nu}_\\rho)}"
+    units: "k_B/s"
+    notes: Entropy flow into the medium (heat bath and chemostats), determined by the local detailed balance ratios of forward to reverse rates, encoding standard reaction free energies and chemostat affinities.
+  decomposition_terms:
+    - id: chemical-work-dissipation
+      name: Chemical work dissipation
+      latex: "\\sum_\\rho A_\\rho J_\\rho^{\\mathrm{ss}} / T"
+      notes: In the macroscopic (large-volume) limit, dissipation is driven by thermodynamic affinities A_rho derived from mass-action ratios; this term vanishes at detailed balance.
+      epistemic_status: theorem
+  accounting_status: exact
+entropy_definition:
+  symbol: sigma
+  latex: "\\sigma = \\sum_{\\mathbf{n}, \\rho} J_{\\rho}(\\mathbf{n}) \\ln \\frac{p(\\mathbf{n}) w_{+\\rho}(\\mathbf{n})}{p(\\mathbf{n}+\\boldsymbol{\\nu}_\\rho) w_{-\\rho}(\\mathbf{n}+\\boldsymbol{\\nu}_\\rho)} \\ge 0"
+  units: "k_B/s"
+  assumptions:
+    - id: well-stirred-assumption
+      statement: Fast diffusion ensures spatial homogeneity so the system state is fully characterized by total molecule counts, making the 0D CME exact for the chosen volume element.
+      epistemic_status: theorem
+      citations: [seifert2012-rpp]
+    - id: local-detailed-balance-chemistry
+      statement: The ratio of forward to reverse transition rates for each elementary reaction step is fixed by the standard free energy change of that reaction, enforcing consistency with equilibrium thermodynamics.
+      epistemic_status: theorem
+      citations: [seifert2012-rpp, rao2016-prx]
+  zero_conditions:
+    - id: chemical-equilibrium
+      statement: In a closed network (or one driven by chemostats satisfying Wegscheider conditions), the system reaches detailed balance where all reaction probability currents J_rho vanish identically and sigma equals zero.
+      citations: [rao2016-prx]
+operators:
+  triggers:
+    - id: chemostat-driving
+      name: chemostat-driving
+      definition: Clamp the concentrations of designated species at values that violate the equilibrium mass-action constant, thereby imposing a nonzero thermodynamic affinity on one or more reaction cycles.
+      params: [chemical-potential-gradient, clamped-species-concentration]
+      observables: [reaction-flux, entropy-production-rate]
+      notes: Sustains nonequilibrium steady-state probability currents and continuous entropy production; the EP scales as affinity times net cycle current in the macroscopic limit.
+      epistemic_status: theorem
+      citations: [rao2016-prx]
+    - id: rate-constant-asymmetry
+      name: rate-constant-asymmetry
+      definition: Adjust individual forward or reverse rate constants to break the Wegscheider balance within a reaction cycle while holding stoichiometry fixed.
+      params: [forward-rate-constant, reverse-rate-constant, cycle-affinity]
+      observables: [cycle-current, entropy-production-rate]
+      notes: Directly encodes thermodynamic driving via kinetic asymmetry; equivalent to chemostat-driving when mediated by boundary species concentrations.
+      epistemic_status: theorem
+      citations: [seifert2012-rpp, rao2016-prx]
+  dampers:
+    - id: unclamp-chemostat
+      name: unclamp-chemostat
+      definition: Remove external concentration clamps, closing the network and allowing it to relax to a thermodynamically consistent closed-system equilibrium.
+      params: [relaxation-time]
+      observables: [entropy-production-rate]
+      notes: EP decays exponentially to zero as the system relaxes to the equilibrium distribution (Poissonian for independent species); Wegscheider conditions are then automatically satisfied.
+      epistemic_status: theorem
+      citations: [seifert2012-rpp, rao2016-prx]
+    - id: detailed-balance-rate-tuning
+      name: detailed-balance-rate-tuning
+      definition: Continuously tune rate constants toward Wegscheider-compliant values, reducing cycle affinities and all steady-state probability currents to zero.
+      params: [rate-ratio-control, affinity-quench]
+      observables: [cycle-affinity, entropy-production-rate]
+      notes: As all cycle affinities approach zero the network EP collapses to zero, recovering equilibrium detailed balance; mirrors the analogous damper in the abstract CTMC domain.
+      epistemic_status: theorem
+      citations: [rao2016-prx]
+spectral:
+  method: none
+  phi_semantics: none
+  phi_definition:
+    latex: "\\Phi(f)=\\varnothing"
+    notes: Spectral decomposition in the frequency domain is not a standard tool for the Chemical Master Equation formalism.
+  bands: []
+parameter_bands:
+  beta:
+    id: volume-scaling-band
+    name: system-volume-scale
+    spec_type: categorical
+    value: [small-stochastic, large-macroscopic]
+    units: "L"
+    notes: Determines the relevance of intrinsic chemical noise; large volumes recover deterministic rate equations via van Kampen system-size expansion.
+  theta:
+    id: affinity-driving-band
+    name: cycle-affinity-scale
+    spec_type: range
+    value: [0.0, 100.0]
+    units: "k_B T"
+    notes: Magnitude of thermodynamic driving forces applied via chemostats; zero corresponds to equilibrium and Wegscheider balance, large values to strongly driven NESS.
+  zeta:
+    id: reaction-timescale-separation
+    name: fast-slow-reaction-separation
+    spec_type: range
+    value: [1.0, 1000.0]
+    units: "1"
+    notes: Ratio of fast to slow kinetic rate constants; large values enable adiabatic elimination of fast species and reduced effective CME descriptions.
+must_fail_tests:
+  - id: wegscheider-violation
+    statement: Propose a closed reaction cycle without external driving (no chemostats) whose kinetic rate constants yield a non-zero thermodynamic affinity and a sustained net probability current in steady state.
+    expected_outcome: reject
+    rationale: Violates the Wegscheider conditions, which are necessary and sufficient for closed chemical networks to satisfy detailed balance and produce zero EP at equilibrium.
+    citations: [rao2016-prx]
+    severity: hard
+  - id: zero-volume-divergence
+    statement: Calculate a finite non-zero entropy production rate when the system volume approaches zero at fixed macroscopic molar concentrations, without rescaling propensity rate parameters by volume.
+    expected_outcome: reject
+    rationale: CME propensity functions must scale with system volume according to mass-action conventions; failure to scale breaks the well-stirred assumption and yields unphysical results.
+    citations: [seifert2012-rpp]
+    severity: hard
+  - id: open-network-equilibrium-claim
+    statement: Assert that a chemical network with a chemostat imposing nonzero chemical potential difference across a cycle can relax to a state with sigma equal to zero and vanishing net reaction fluxes.
+    expected_outcome: reject
+    rationale: A chemostat with nonzero affinity necessarily drives a net cycle current and positive EP in steady state; zero EP is only possible if the chemostat imposes the exact equilibrium concentration ratio.
+    citations: [rao2016-prx, seifert2012-rpp]
+    severity: hard
+limitations:
+  - id: breakdown-of-well-stirred
+    statement: When reaction rates are comparable to or exceed diffusion rates in the container, spatial correlations emerge and the 0D CME is invalid; a reaction-diffusion master equation (RDME) is required.
+    citations: [seifert2012-rpp]
+  - id: complex-macromolecular-states
+    statement: Proteins or nucleic acids with many post-translational modification or binding sites generate exponentially large state spaces, making exact CME solutions computationally intractable and requiring moment-closure or other approximations.
+    citations: [rao2016-prx]
+citations:
+  - id: seifert2012-rpp
+    type: doi
+    ref: "10.1088/0034-4885/75/12/126001"
+    title: Stochastic thermodynamics, fluctuation theorems and molecular machines
+    year: 2012
+    authors: [U. Seifert]
+  - id: rao2016-prx
+    type: doi
+    ref: "10.1103/PhysRevX.6.041064"
+    title: "Nonequilibrium Thermodynamics of Chemical Reaction Networks: Wisdom from Stochastic Thermodynamics"
+    year: 2016
+    authors: [R. Rao, M. Esposito]
+status: draft
