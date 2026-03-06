@@ -97,4 +97,35 @@ Seifert2012:
   authors: ["Udo Seifert"]
   year: 2012
   doi: "10.1088/0034-4885/75/12/126001"
+breuer-petruccione2002:
+  authors:
+  - H.-P. Breuer
+  - F. Petruccione
+  title: The Theory of Open Quantum Systems
+  type: book
+  year: 2002
+  doi: "10.1093/acprof:oso/9780199213900.001.0001"
+gorini1976:
+  authors:
+  - V. Gorini
+  - A. Kossakowski
+  - E. C. G. Sudarshan
+  doi: 10.1063/1.522979
+  title: Completely positive dynamical semigroups of N-level systems
+  type: article
+  year: 1976
+lindblad1976:
+  authors:
+  - G. Lindblad
+  doi: 10.1007/BF01608499
+  title: On the generators of quantum dynamical semigroups
+  type: article
+  year: 1976
+spohn1978:
+  authors:
+  - H. Spohn
+  doi: 10.1063/1.523789
+  title: Entropy production for quantum dynamical semigroups
+  type: article
+  year: 1978
 
