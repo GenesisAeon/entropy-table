@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import sys
 from pathlib import Path
+from types import ModuleType
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -11,6 +14,80 @@ from bindings import CASE_ID_RE, CLAIM_ID_RE, parse_case_ids_from_claim_yaml
 
 CLAIM_KINDS = {"definition", "theorem", "lemma", "heuristic", "empirical", "limitation"}
 CLAIM_STATUS = {"draft", "review", "stable"}
+
+
+def _is_valid_case_item(case: Any) -> bool:
+    if isinstance(case, str):
+        return bool(case.strip())
+    if not isinstance(case, dict):
+        return False
+
+    case_id = case.get("id")
+    if case_id is not None and (not isinstance(case_id, str) or not case_id.strip()):
+        return False
+
+    description = case.get("description")
+    if description is not None and (not isinstance(description, str) or not description.strip()):
+        return False
+
+    compute_ref = case.get("compute_ref")
+    if compute_ref is not None and (not isinstance(compute_ref, str) or not compute_ref.strip()):
+        return False
+
+    return True
+
+
+def _load_module_from_path(module_path: Path) -> ModuleType:
+    spec = importlib.util.spec_from_file_location(module_path.stem, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Could not load module spec from {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _run_compute_case_hooks(claim: dict[str, Any], errors: list[str], where: str) -> None:
+    status = claim.get("status")
+    if status not in {"review", "stable"}:
+        return
+
+    evidence = claim.get("evidence")
+    if not isinstance(evidence, dict):
+        return
+
+    cases = evidence.get("cases")
+    if not isinstance(cases, list):
+        return
+
+    for idx, case in enumerate(cases):
+        if not isinstance(case, dict):
+            continue
+
+        compute_ref = case.get("compute_ref")
+        if not isinstance(compute_ref, str) or not compute_ref.strip():
+            continue
+
+        case_label = case.get("id") if isinstance(case.get("id"), str) and case.get("id").strip() else f"index={idx}"
+
+        try:
+            module_path = ROOT / compute_ref
+            if not module_path.exists():
+                raise FileNotFoundError(f"compute_ref path does not exist: {compute_ref}")
+
+            module = _load_module_from_path(module_path)
+            verify = getattr(module, "verify_claim", None)
+            if not callable(verify):
+                raise AttributeError("verify_claim() function is missing or not callable")
+
+            result = verify()
+            if not isinstance(result, bool):
+                raise TypeError("verify_claim() must return a bool")
+            if not result:
+                raise AssertionError("verify_claim() returned False")
+        except Exception as exc:  # noqa: BLE001 - must never crash validation pipeline
+            errors.append(
+                f"{where}: compute evidence failed for case '{case_label}' via '{compute_ref}': {exc}"
+            )
 
 
 def discover_domain_ids() -> set[str]:
@@ -120,10 +197,10 @@ def validate_claim_file(
             citations = citation_refs
 
         cases = evidence.get("cases")
-        if cases is not None and (
-            not isinstance(cases, list) or not all(isinstance(item, str) and item.strip() for item in cases)
-        ):
-            errors.append(f"{where}: evidence.cases must be a list of non-empty strings when provided")
+        if cases is not None and (not isinstance(cases, list) or not all(_is_valid_case_item(item) for item in cases)):
+            errors.append(
+                f"{where}: evidence.cases must be a list of non-empty strings or case objects when provided"
+            )
         else:
             for case_id in parse_case_ids_from_claim_yaml(claim):
                 if not CASE_ID_RE.match(case_id):
@@ -140,6 +217,8 @@ def validate_claim_file(
         errors.append(f"{where}: evidence.citations must contain at least one citation for status={status}")
     elif status in {"review", "stable"} and len(parse_case_ids_from_claim_yaml(claim)) < 1:
         warnings.append(f"{where}: review/stable claim has 0 evidence.cases")
+
+    _run_compute_case_hooks(claim, errors, where)
 
     relations_touched = claim.get("relations_touched")
     if relations_touched is not None:
