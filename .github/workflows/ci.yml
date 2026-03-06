@@ -9,18 +9,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install .
-      - name: Run tests
-        run: pytest
-      - name: Validate atlas
-        run: python tools/validate.py
-      - name: Validate bibliography
-        run: python tools/validate_bibliography.py
-      - name: Analyze atlas health
+
+      - name: Run all tests
+        run: make test
+
+      - name: Validate complete Atlas
+        run: make validate-all
+
+      - name: Analyze atlas health (strict CI mode)
         run: python tools/analyze_health.py --ci-check
+
+      - name: Generate Atlas Graph
+        run: make visualize
+
+      - name: Upload Graph Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: atlas-graph-mermaid
+          path: docs/atlas_graph.mmd
+          retention-days: 14
