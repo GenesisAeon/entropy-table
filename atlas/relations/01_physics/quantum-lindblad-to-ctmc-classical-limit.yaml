@@ -1,0 +1,63 @@
+id: quantum-lindblad-to-ctmc-classical-limit
+source_domain_id: quantum-lindblad
+target_domain_id: ctmc-schnakenberg
+relation_type: approximation_limit
+conditions:
+  text: Take the high-temperature classical limit (k_B T >> hbar * omega) of the Lindblad master equation. In this regime quantum coherences dephase on timescales much faster than population dynamics, and the density matrix diagonalizes in the energy eigenbasis. The resulting population dynamics obey a classical Pauli master equation, which is equivalent to a CTMC with rates satisfying local detailed balance.
+  params:
+    thermal_limit: "k_B T >> hbar * omega_0"
+    decoherence_condition: "off-diagonal coherences dephase to zero in the energy eigenbasis"
+    rate_mapping: "w_ij = sum_k |<i|L_k|j>|^2 * n_th(omega_ij) for excitation, |<j|L_k|i>|^2 * (n_th+1) for decay"
+    markovian: true
+    rotating_wave_approximation: true
+preserved:
+  - non-negativity of total entropy production (sigma >= 0)
+  - local detailed balance structure of transition rates
+  - second law satisfaction in both quantum and classical formulations
+  - thermal Gibbs state as unique stationary state in the absence of driving
+  - convergence of entropy production to zero at equilibrium
+lost:
+  - quantum coherences and off-diagonal density matrix elements
+  - coherent interference effects between transition pathways
+  - von Neumann entropy distinctness from Shannon entropy at low temperatures
+  - quantum corrections to entropy production from non-commuting operators
+expected_effect:
+  direction: context_dependent
+  inequality: "sigma_vN (von Neumann) -> sigma_Schnakenberg (Shannon) as k_B T / (hbar * omega) -> infinity"
+  description: In the classical limit, the von Neumann entropy production converges to the Shannon-based Schnakenberg entropy production of the resulting Pauli master equation. At finite temperature or significant coherence strength, quantum corrections distinguish the two formulations.
+must_fail_tests:
+  - id: coherence-persistence-in-classical-limit
+    statement: Assert that quantum coherences between energy eigenstates survive in the high-temperature (k_B T >> hbar*omega) limit of the Lindblad equation and produce non-classical entropy production contributions absent from the CTMC.
+    expected_outcome: reject
+    rationale: In the high-temperature limit, rapid dephasing renders off-diagonal density matrix elements negligible; the Lindbladian reduces to a Pauli master equation on the diagonal populations.
+    citations: [breuer-petruccione2002]
+    severity: hard
+  - id: von-neumann-shannon-mismatch-at-equilibrium
+    statement: Claim that von Neumann entropy production and Schnakenberg entropy production remain inequivalent at thermal equilibrium in the classical limit.
+    expected_outcome: reject
+    rationale: At detailed balance both formulations give sigma = 0; the two entropy production expressions agree at equilibrium regardless of quantum or classical regime.
+    citations: [spohn1978, lindblad1976]
+    severity: hard
+citations:
+  - id: breuer-petruccione2002
+    type: book
+    ref: "Oxford University Press"
+    title: The Theory of Open Quantum Systems
+    year: 2002
+    authors: [H.-P. Breuer, F. Petruccione]
+  - id: spohn1978
+    type: doi
+    ref: "10.1063/1.523789"
+    title: Entropy production for quantum dynamical semigroups
+    year: 1978
+    authors: [H. Spohn]
+  - id: lindblad1976
+    type: doi
+    ref: "10.1007/BF01608499"
+    title: On the generators of quantum dynamical semigroups
+    year: 1976
+    authors: [G. Lindblad]
+status: draft
+context:
+  tags: [quantum-lindblad, ctmc, classical-limit, high-temperature, decoherence]
+  notes: The classical limit recovers the Pauli master equation from the GKSL diagonal populations; this is the canonical quantum-to-classical correspondence for Markovian open systems.
