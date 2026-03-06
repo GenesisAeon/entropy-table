@@ -10,7 +10,7 @@ scope:
   does_not_apply: [single isolated microstate]
 boundary:
   closure_type: open
-  exchange_channels: [matter, information]
+  exchange_channels: [heat, matter, information]
   external_entities:
     - id: controller
       role: driver

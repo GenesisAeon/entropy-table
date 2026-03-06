@@ -2,6 +2,7 @@ id: composition-sub-to-super
 source_domain_id: subsystem-langevin
 target_domain_id: supersystem-network
 relation_type: composition
+channels: [heat, information]
 conditions:
   text: Subsystem state is aggregated into network node budget.
   params:
