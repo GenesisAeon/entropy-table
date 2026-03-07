@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -132,9 +133,9 @@ def composition_relation(rel_id: str, source: str, target: str) -> dict:
     }
 
 
-def run_validator(atlas_root: Path) -> subprocess.CompletedProcess[str]:
+def run_validator(atlas_root: Path, *extra_args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        [sys.executable, str(SCRIPT), "--atlas-root", str(atlas_root)],
+        [sys.executable, str(SCRIPT), "--atlas-root", str(atlas_root), *extra_args],
         check=False,
         text=True,
         capture_output=True,
@@ -190,3 +191,35 @@ def test_warnings_do_not_fail(tmp_path: Path) -> None:
 
     assert result.returncode == 0
     assert "WARNING:" in result.stdout
+
+
+def test_json_output_valid(tmp_path: Path) -> None:
+    atlas = tmp_path / "atlas"
+    write_yaml(atlas / "domains" / "a.yaml", domain_payload("a"))
+    write_yaml(atlas / "domains" / "b.yaml", domain_payload("b"))
+    write_yaml(atlas / "relations" / "a-to-b.yaml", composition_relation("a-to-b", "a", "b"))
+
+    result = run_validator(atlas, "--json")
+
+    assert result.returncode == 0
+    data = json.loads(result.stdout)
+    assert data["summary"]["valid"] is True
+    assert data["summary"]["cycle_found"] is False
+    assert data["summary"]["composition_edges_count"] == 1
+    assert data["errors"] == []
+
+
+def test_json_output_cycle_error(tmp_path: Path) -> None:
+    atlas = tmp_path / "atlas"
+    write_yaml(atlas / "domains" / "a.yaml", domain_payload("a"))
+    write_yaml(atlas / "domains" / "b.yaml", domain_payload("b"))
+    write_yaml(atlas / "relations" / "a-to-b.yaml", composition_relation("a-to-b", "a", "b"))
+    write_yaml(atlas / "relations" / "b-to-a.yaml", composition_relation("b-to-a", "b", "a"))
+
+    result = run_validator(atlas, "--json")
+
+    assert result.returncode == 1
+    data = json.loads(result.stdout)
+    assert data["summary"]["valid"] is False
+    assert data["summary"]["cycle_found"] is True
+    assert any("cycle" in e for e in data["errors"])

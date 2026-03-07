@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from collections import defaultdict, deque
 from pathlib import Path
@@ -145,7 +146,7 @@ def _composition_domain_refs(relation: dict[str, Any]) -> list[str]:
     return refs
 
 
-def validate_composition(atlas_root: Path, max_depth_warning: int = DEFAULT_MAX_DEPTH_WARNING) -> int:
+def validate_composition(atlas_root: Path, max_depth_warning: int = DEFAULT_MAX_DEPTH_WARNING, json_output: bool = False) -> int:
     domains_by_id: dict[str, dict[str, Any]] = {}
     domain_path_by_id: dict[str, Path] = {}
     errors: list[str] = []
@@ -290,18 +291,36 @@ def validate_composition(atlas_root: Path, max_depth_warning: int = DEFAULT_MAX_
             f"composition max depth is {depth}, above warning threshold {max_depth_warning}; consider whether systems are over-nested"
         )
 
-    for error in errors:
-        print(f"ERROR: {error}")
-    for warning in warnings:
-        print(f"WARNING: {warning}")
-    for info in infos:
-        print(f"INFO: {info}")
+    summary = {
+        "composition_edges_count": len(composition_edges),
+        "max_depth": depth,
+        "cycle_found": bool(cycle),
+        "error_count": len(errors),
+        "warning_count": len(warnings),
+        "valid": len(errors) == 0,
+    }
 
-    print("Summary:")
-    print(f"  composition_edges_count: {len(composition_edges)}")
-    print(f"  max_depth: {depth}")
-    print(f"  cycle_found: {'yes' if cycle else 'no'}")
-    print(f"  warnings_count: {len(warnings)}")
+    if json_output:
+        output = {
+            "summary": summary,
+            "errors": errors,
+            "warnings": warnings,
+            "infos": infos,
+        }
+        print(json.dumps(output, indent=2))
+    else:
+        for error in errors:
+            print(f"ERROR: {error}")
+        for warning in warnings:
+            print(f"WARNING: {warning}")
+        for info in infos:
+            print(f"INFO: {info}")
+
+        print("Summary:")
+        print(f"  composition_edges_count: {summary['composition_edges_count']}")
+        print(f"  max_depth: {summary['max_depth']}")
+        print(f"  cycle_found: {'yes' if cycle else 'no'}")
+        print(f"  warnings_count: {summary['warning_count']}")
 
     return 1 if errors else 0
 
@@ -320,12 +339,13 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default=DEFAULT_MAX_DEPTH_WARNING,
         help=f"Warn when composition depth exceeds this threshold (default: {DEFAULT_MAX_DEPTH_WARNING})",
     )
+    parser.add_argument("--json", action="store_true", help="Output results as JSON")
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or [])
-    return validate_composition(args.atlas_root, max_depth_warning=args.max_depth_warning)
+    return validate_composition(args.atlas_root, max_depth_warning=args.max_depth_warning, json_output=args.json)
 
 
 if __name__ == "__main__":
