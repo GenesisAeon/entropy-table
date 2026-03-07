@@ -3,6 +3,9 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
+import urllib.error
+import urllib.request
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +16,56 @@ from common import ROOT, load_yaml
 TARGET_SUBDIRS = ("domains", "relations", "claims")
 FAIL_STATUSES = {"stable", "review"}
 WARN_STATUSES = {"draft"}
+
+_DOI_USER_AGENT = "entropy-table-ci/1.0 (https://github.com/entropy-table/entropy-table)"
+
+
+def verify_doi(doi: str, retries: int = 3) -> bool:
+    """Return True if *doi* resolves successfully via doi.org HEAD request.
+
+    Uses exponential backoff on transient errors (5xx, connection issues).
+    Returns False immediately on a definitive 404.
+    """
+    url = f"https://doi.org/{doi}"
+    for attempt in range(retries):
+        try:
+            req = urllib.request.Request(
+                url,
+                method="HEAD",
+                headers={"User-Agent": _DOI_USER_AGENT},
+            )
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                return resp.status in (200, 301, 302)
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404:
+                return False
+            # 429 / 5xx — back off and retry
+        except urllib.error.URLError:
+            pass  # network error — retry
+        if attempt < retries - 1:
+            time.sleep(2 ** attempt)
+    return False
+
+
+def verify_dois_in_refs(refs: dict, *, verbose: bool = False) -> list[str]:
+    """Return a list of error strings for every DOI in *refs* that cannot be resolved."""
+    errors: list[str] = []
+    total = sum(1 for v in refs.values() if isinstance(v, dict) and v.get("doi"))
+    checked = 0
+    for ref_id, data in refs.items():
+        if not isinstance(data, dict):
+            continue
+        doi = data.get("doi")
+        if not doi:
+            continue
+        checked += 1
+        if verbose:
+            print(f"  [{checked}/{total}] Checking DOI for '{ref_id}': {doi}", flush=True)
+        if not verify_doi(str(doi)):
+            errors.append(
+                f"refs.yaml: citation '{ref_id}' has an unresolvable DOI: {doi}"
+            )
+    return errors
 
 
 def load_bibliography_ids(refs_path: Path) -> set[str]:
@@ -72,6 +125,11 @@ def main(argv: list[str] | None = None) -> int:
         help="Bibliography YAML mapping citation IDs to metadata",
     )
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
+    parser.add_argument(
+        "--verify-dois",
+        action="store_true",
+        help="Perform live HTTP HEAD checks on every DOI in refs.yaml (requires network access)",
+    )
     args = parser.parse_args(argv)
 
     atlas_root = Path(args.atlas_root)
@@ -81,11 +139,20 @@ def main(argv: list[str] | None = None) -> int:
     if not refs_path.is_absolute():
         refs_path = ROOT / refs_path
 
-    known_refs = load_bibliography_ids(refs_path)
+    refs_data = load_yaml(refs_path)
+    known_refs: set[str] = set(refs_data.keys())
     yaml_paths = discover_yaml_files(atlas_root)
 
     errors: list[str] = []
     warnings: list[str] = []
+
+    # Optional live DOI verification (CI-only, behind flag)
+    if args.verify_dois:
+        if not args.json:
+            print(f"Verifying DOIs for {sum(1 for v in refs_data.values() if isinstance(v, dict) and v.get('doi'))} entries in refs.yaml …")
+        doi_errors = verify_dois_in_refs(refs_data, verbose=not args.json)
+        errors.extend(doi_errors)
+
     for path in yaml_paths:
         path_errors, path_warnings = validate_file(path, known_refs)
         errors.extend(path_errors)

@@ -1,4 +1,4 @@
-.PHONY: help validate validate-all test health render visualize visualize-dot metrics release clean
+.PHONY: help validate validate-all validate-ci test health render visualize visualize-dot metrics release clean
 
 PYTHON := python
 TOOLS  := tools
@@ -9,6 +9,7 @@ help:
 	@echo ""
 	@echo "  validate      Validate domain/relation schemas and cross-references"
 	@echo "  validate-all  Run all validation checks (schema + claims + composition + bibliography)"
+	@echo "  validate-ci   validate-all + live DOI resolution checks (requires network)"
 	@echo "  test          Run the full pytest test suite"
 	@echo "  health        Analyse atlas health (orphaned domains, unfalsifiable claims, …)"
 	@echo "  render        Render atlas to atlas.md and atlas.tex"
@@ -27,6 +28,11 @@ validate-all: validate
 	$(PYTHON) $(TOOLS)/validate_claims.py
 	$(PYTHON) $(TOOLS)/validate_composition.py
 	$(PYTHON) $(TOOLS)/validate_bibliography.py
+
+# validate-ci extends validate-all with live network checks (DOI resolution).
+# Intended for CI pipelines with network access; not required for local dev.
+validate-ci: validate-all
+	$(PYTHON) $(TOOLS)/validate_bibliography.py --verify-dois
 
 # ── Testing ───────────────────────────────────────────────────────────────────
 

@@ -11,7 +11,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from common import domain_files, load_yaml, relation_files
+from common import domain_files, load_yaml, locked_atomic_write, relation_files
 
 INDEX_PATH = Path("cache/index.json")
 DEFAULT_JSON_OUT = Path("cache/metrics.json")
@@ -197,11 +197,12 @@ def main(argv: list[str] | None = None) -> int:
 
     json_out = Path(args.json_out)
     md_out = Path(args.md_out)
-    json_out.parent.mkdir(parents=True, exist_ok=True)
-    md_out.parent.mkdir(parents=True, exist_ok=True)
 
-    json_out.write_text(json.dumps(metrics, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    md_out.write_text(render_markdown(metrics, used_index), encoding="utf-8")
+    with locked_atomic_write(json_out) as tmp:
+        tmp.write_text(json.dumps(metrics, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    with locked_atomic_write(md_out) as tmp:
+        tmp.write_text(render_markdown(metrics, used_index), encoding="utf-8")
 
     print(f"Wrote metrics JSON: {json_out}")
     print(f"Wrote metrics Markdown: {md_out}")
