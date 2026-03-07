@@ -1,4 +1,4 @@
-.PHONY: help validate validate-all test health render visualize visualize-dot metrics release clean
+.PHONY: help validate validate-all test health render visualize visualize-dot metrics release new-domain clean
 
 PYTHON := python
 TOOLS  := tools
@@ -16,6 +16,7 @@ help:
 	@echo "  visualize-dot Generate Graphviz DOT graph (docs/atlas_graph.dot)"
 	@echo "  metrics       Compute operational atlas metrics (JSON + Markdown)"
 	@echo "  release       Build a release pack  (set VERSION=vX.Y.Z)"
+	@echo "  new-domain    Scaffold a new domain file  (set ID=my-domain)"
 	@echo "  clean         Remove generated artefacts"
 
 # ── Validation ────────────────────────────────────────────────────────────────
@@ -60,6 +61,16 @@ visualize-dot:
 
 release:
 	$(PYTHON) $(TOOLS)/release.py --version $(VERSION)
+
+# ── Scaffolding ───────────────────────────────────────────────────────────────
+
+new-domain:
+	@if [ -z "$(ID)" ]; then \
+		read -p "Domain ID (kebab-case, e.g. my-new-system): " _id; \
+		$(PYTHON) $(TOOLS)/scaffold.py domain "$$_id" --category "$(or $(CATEGORY),01_physics)"; \
+	else \
+		$(PYTHON) $(TOOLS)/scaffold.py domain "$(ID)" --category "$(or $(CATEGORY),01_physics)"; \
+	fi
 
 # ── Cleanup ───────────────────────────────────────────────────────────────────
 
