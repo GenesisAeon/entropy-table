@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -76,3 +77,35 @@ def test_validate_claims_fails_stable_without_citations(tmp_path: Path) -> None:
     result = run_validate_claims("--claims-root", str(claims_dir.parents[2]))
     assert result.returncode != 0
     assert "status=stable" in result.stdout
+
+
+def test_json_output_valid(tmp_path: Path) -> None:
+    claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"
+    claims_dir.mkdir(parents=True)
+    (claims_dir / "claim-tmp-valid-claim.yaml").write_text(
+        yaml.safe_dump(make_valid_claim(), sort_keys=False), encoding="utf-8"
+    )
+
+    result = run_validate_claims("--claims-root", str(claims_dir.parents[2]), "--json")
+    assert result.returncode == 0
+    data = json.loads(result.stdout)
+    assert data["summary"]["valid"] is True
+    assert data["summary"]["error_count"] == 0
+    assert data["errors"] == []
+
+
+def test_json_output_error(tmp_path: Path) -> None:
+    claims_dir = tmp_path / "claims" / "01_physics" / "ctmc-schnakenberg"
+    claims_dir.mkdir(parents=True)
+    payload = make_valid_claim()
+    payload.pop("domain_ref")
+    (claims_dir / "claim-tmp-valid-claim.yaml").write_text(
+        yaml.safe_dump(payload, sort_keys=False), encoding="utf-8"
+    )
+
+    result = run_validate_claims("--claims-root", str(claims_dir.parents[2]), "--json")
+    assert result.returncode == 1
+    data = json.loads(result.stdout)
+    assert data["summary"]["valid"] is False
+    assert data["summary"]["error_count"] >= 1
+    assert any("domain_ref" in e["message"] for e in data["errors"])
