@@ -36,7 +36,7 @@ jobs:
         run: make test
 
       - name: Validate complete Atlas (via Makefile)
-        run: make validate-all
+        run: make validate-ci
 
       - name: Analyze atlas health (strict CI mode)
         run: python tools/analyze_health.py --ci-check
