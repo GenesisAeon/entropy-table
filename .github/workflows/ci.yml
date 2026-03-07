@@ -32,6 +32,14 @@ jobs:
       - name: Activate venv
         run: echo "$GITHUB_WORKSPACE/.venv/bin" >> $GITHUB_PATH
 
+      - name: Cache DOI validations
+        uses: actions/cache@v4
+        with:
+          path: cache/valid_dois.json
+          key: doi-cache-${{ hashFiles('atlas/bibliography/refs.yaml') }}
+          restore-keys: |
+            doi-cache-
+
       - name: Run all tests (via Makefile)
         run: make test
 
