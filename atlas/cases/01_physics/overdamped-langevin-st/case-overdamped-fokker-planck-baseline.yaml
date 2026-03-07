@@ -1,0 +1,24 @@
+id: case-overdamped-fokker-planck-baseline
+calculator: diffusion-ep-1d
+input:
+  format: json-inline
+  # Minimal isothermal diffusion: uniform mobility, constant drift force, unit temperature.
+  # sigma = mobility * force^2 / temperature = 1.0 * 1.0 / 1.0 = 1.0 >= 0,
+  # confirming non-negativity for this representative parameter set.
+  data:
+    mobility: 1.0
+    force: 1.0
+    temperature: 1.0
+expected:
+  sigma_min: 0.0
+  sigma_close:
+    value: 1.0
+    tol: 1.0e-12
+notes: >
+  Baseline Fokker-Planck case for an overdamped particle in an isothermal bath.
+  Demonstrates sigma >= 0 (claim ep-nonnegative-isothermal) at the representative
+  operating point mobility=1, force=1, T=1.
+citations:
+  - seifert2012-rpp
+claims:
+  - ep-nonnegative-isothermal

@@ -1,0 +1,20 @@
+id: "<TODO:id>"
+calculator: "<TODO:calculator>"
+# Supported calculators:
+#   ctmc-ep          – Schnakenberg entropy production for CTMC networks
+#   diffusion-ep-1d  – 1-D overdamped-diffusion entropy production
+input:
+  format: json-inline
+  # ctmc-ep requires:        rates (square 2-D list of transition rates)  and  pi (stationary distribution list)
+  # diffusion-ep-1d requires: mobility (float > 0), force (float), temperature (float > 0)
+  data:
+    rates: "<TODO:input.data.rates>"
+    pi: "<TODO:input.data.pi>"
+expected:
+  sigma_min: 0.0
+  sigma_close:
+    value: "<TODO:expected.sigma_close.value>"
+    tol: 1.0e-9
+notes: "<TODO:notes>"
+citations: []
+claims: []
