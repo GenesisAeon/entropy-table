@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 from typing import Any
@@ -70,6 +71,7 @@ def main(argv: list[str] | None = None) -> int:
         default="atlas/bibliography/refs.yaml",
         help="Bibliography YAML mapping citation IDs to metadata",
     )
+    parser.add_argument("--json", action="store_true", help="Output results as JSON")
     args = parser.parse_args(argv)
 
     atlas_root = Path(args.atlas_root)
@@ -89,22 +91,38 @@ def main(argv: list[str] | None = None) -> int:
         errors.extend(path_errors)
         warnings.extend(path_warnings)
 
-    if warnings:
-        print(f"Bibliography validation warnings ({len(warnings)}):")
-        for warning in warnings:
-            print(f" - WARNING: {warning}")
+    summary = {
+        "files_scanned": len(yaml_paths),
+        "known_citations": len(known_refs),
+        "error_count": len(errors),
+        "warning_count": len(warnings),
+        "valid": len(errors) == 0,
+    }
 
-    if errors:
-        print(f"Bibliography validation failed with {len(errors)} error(s):")
-        for error in errors:
-            print(f" - {error}")
-        return 1
+    if args.json:
+        output = {
+            "summary": summary,
+            "errors": errors,
+            "warnings": warnings,
+        }
+        print(json.dumps(output, indent=2))
+    else:
+        if warnings:
+            print(f"Bibliography validation warnings ({len(warnings)}):")
+            for warning in warnings:
+                print(f" - WARNING: {warning}")
 
-    print(
-        f"Bibliography validation passed: {len(yaml_paths)} files scanned, "
-        f"{len(known_refs)} known citation id(s)."
-    )
-    return 0
+        if errors:
+            print(f"Bibliography validation failed with {len(errors)} error(s):")
+            for error in errors:
+                print(f" - {error}")
+            return 1
+
+        print(
+            f"Bibliography validation passed: {len(yaml_paths)} files scanned, "
+            f"{len(known_refs)} known citation id(s)."
+        )
+    return 1 if errors else 0
 
 
 if __name__ == "__main__":

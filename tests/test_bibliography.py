@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -81,3 +82,41 @@ def test_stable_with_unknown_citation_fails(atlas_root: Path) -> None:
     assert result.returncode != 0
     assert "failed" in result.stdout.lower()
     assert "missing-citation" in result.stdout
+
+
+def test_json_output_valid(atlas_root: Path) -> None:
+    _write_domain(
+        atlas_root / "domains" / "01_physics" / "good-domain.yaml",
+        status="stable",
+        citations=["known-citation"],
+    )
+
+    result = run_validate_bibliography(
+        "--atlas-root", str(atlas_root),
+        "--refs", str(atlas_root / "bibliography" / "refs.yaml"),
+        "--json",
+    )
+    assert result.returncode == 0
+    data = json.loads(result.stdout)
+    assert data["summary"]["valid"] is True
+    assert data["summary"]["error_count"] == 0
+    assert data["errors"] == []
+
+
+def test_json_output_error(atlas_root: Path) -> None:
+    _write_domain(
+        atlas_root / "domains" / "01_physics" / "bad-domain.yaml",
+        status="stable",
+        citations=["missing-citation"],
+    )
+
+    result = run_validate_bibliography(
+        "--atlas-root", str(atlas_root),
+        "--refs", str(atlas_root / "bibliography" / "refs.yaml"),
+        "--json",
+    )
+    assert result.returncode == 1
+    data = json.loads(result.stdout)
+    assert data["summary"]["valid"] is False
+    assert data["summary"]["error_count"] == 1
+    assert any("missing-citation" in e for e in data["errors"])
