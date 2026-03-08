@@ -27,12 +27,13 @@ def validate(
 
 @app.command("validate-all")
 def validate_all() -> None:
-    """Run ALL validation checks (schema + claims + composition + bibliography)."""
+    """Run ALL validation checks (schema + claims + composition + bibliography + math)."""
     from entropy_table.commands.validate import main as validate_main
     from entropy_table.commands.validate_claims import main as claims_main
     from entropy_table.commands.validate_composition import main as comp_main
     from entropy_table.commands.validate_bibliography import main as bib_main
     from entropy_table.commands.manage_cases import main as cases_main
+    from entropy_table.commands.validate_math import main as math_main
 
     rc = 0
     rc |= validate_main([]) or 0
@@ -40,7 +41,15 @@ def validate_all() -> None:
     rc |= comp_main([]) or 0
     rc |= bib_main([]) or 0
     rc |= cases_main(["validate"]) or 0
+    rc |= math_main([]) or 0
     raise SystemExit(rc)
+
+
+@app.command("validate-math")
+def validate_math() -> None:
+    """Validate mathematical expressions in atlas domains (SymPy-assisted)."""
+    from entropy_table.commands.validate_math import main
+    raise SystemExit(main([]))
 
 
 @app.command("validate-cases")

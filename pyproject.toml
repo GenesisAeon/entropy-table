@@ -22,6 +22,7 @@ dev = [
     "mypy>=1.11",
     "pre-commit>=4.0",
     "pytest>=8.3",
+    "pytest-cov>=5.0",
 ]
 docs = [
     "mkdocs>=1.6",
@@ -31,6 +32,7 @@ docs = [
     "pymdown-extensions>=10.0",
     "mkdocstrings[python]>=0.25",
 ]
+math = ["sympy>=1.13"]
 
 [project.scripts]
 entropy-table = "entropy_table.cli:app"
