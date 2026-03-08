@@ -23,6 +23,14 @@ dev = [
     "pre-commit>=4.0",
     "pytest>=8.3",
 ]
+docs = [
+    "mkdocs>=1.6",
+    "mkdocs-material>=9.5",
+    "mkdocs-gen-files>=0.5",
+    "mkdocs-literate-nav>=0.6",
+    "pymdown-extensions>=10.0",
+    "mkdocstrings[python]>=0.25",
+]
 
 [project.scripts]
 entropy-table = "entropy_table.cli:app"

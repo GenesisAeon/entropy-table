@@ -10,26 +10,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Offizielle uv Action einbinden (mit extrem schnellem Caching)
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
-      # Python-Version festlegen
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      # Synchronisiert die exakten Versionen aus der uv.lock in ein .venv
-      # --extra dev installiert pytest, typer, ruff, mypy usw.
       - name: Install dependencies
-        run: uv sync --extra dev
+        run: uv sync --extra dev --extra docs
 
-      # Fügt das virtuelle uv-Environment dem Runner-Pfad hinzu
-      # (Dadurch funktionieren alle nachfolgenden 'make'-Befehle unverändert!)
       - name: Activate venv
         run: echo "$GITHUB_WORKSPACE/.venv/bin" >> $GITHUB_PATH
 
@@ -53,9 +47,35 @@ jobs:
       - name: Generate Atlas Graph
         run: make visualize
 
+      - name: Build documentation
+        run: uv run mkdocs build --strict
+
       - name: Upload Graph Artifact
         uses: actions/upload-artifact@v4
         with:
           name: atlas-graph-mermaid
           path: docs/atlas_graph.mmd
           retention-days: 14
+
+  deploy-docs:
+    needs: test-and-validate
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install docs dependencies
+        run: uv sync --extra docs
+
+      - name: Deploy to GitHub Pages
+        run: uv run mkdocs gh-deploy --force

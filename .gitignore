@@ -24,3 +24,6 @@ dist/packs/*.tar.gz
 outputs/snapshots/
 outputs/manifests/
 src/entropy_table/_version.py
+
+# MkDocs build output
+site/
