@@ -7,6 +7,85 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [v1.0.0] – 2026-03-08
+
+### Summary
+
+v1.0.0 marks the first stable, production-ready release of the Entropy Table.
+Three post-v0.4.0 sprints deliver a proper installable Python package with a
+full Typer CLI, a MkDocs Material documentation website with GitHub Pages
+deployment, and a SymPy-powered math validator — all wired into an automated
+PyPI + GitHub Release workflow.
+
+---
+
+### Added
+
+- **Installable Python package** (`src/` layout, `setuptools_scm` versioning):
+  all tools migrated from `tools/*.py` into `src/entropy_table/commands/` as a
+  proper package; `conftest.py` provides backward-compatible flat imports so
+  the existing test suite runs unchanged.  (PR #74)
+
+- **Full Typer CLI** (`entropy-table`): unified entry point with subcommands
+  `validate`, `validate-all`, `validate-math`, `scaffold`, `visualize`,
+  `render`, `health`, `metrics`, `build-index`, `release`.  The `tools/`
+  wrappers remain for Makefile / subprocess-based tests.  (PR #74)
+
+- **Code quality toolchain**: `ruff.toml` + `.pre-commit-config.yaml`
+  (Ruff linter + mypy) integrated into the pre-commit hook and CI.  (PR #74)
+
+- **MkDocs Material documentation website** (`mkdocs.yml`, `docs/`):
+  landing page, schema tutorial ("Add a new domain in 5 min"),
+  full CLI developer guide, Mermaid.js diagram support, and
+  `mkdocstrings` API autodoc.  (PR #75)
+
+- **GitHub Pages CI deploy** (`.github/workflows/ci.yml`): `deploy-docs` job
+  triggers on every push to `main` via `mkdocs gh-deploy`.  (PR #75)
+
+- **`CONTRIBUTING.md`**: contributor workflow with `uv sync`, pre-commit,
+  test, and PR checklist.  (PR #75)
+
+- **`validate-math` command** (`src/entropy_table/commands/validate_math.py`):
+  checks `entropy_accounting` structural completeness, `production_term`
+  non-negativity annotation, `must_fail_tests` integrity, and best-effort
+  SymPy LaTeX parse probe across all domains.  Integrated into `validate-all`.
+  (PR #76)
+
+- **`sympy` optional dependency** (`[math]` extra) + `pytest-cov>=5.0` dev
+  dependency added.  (PR #76)
+
+- **Automated release workflow** (`.github/workflows/release.yml`): on every
+  `v*` tag push — builds the wheel/sdist, runs the full test suite, publishes
+  to PyPI, and creates a GitHub Release with auto-generated notes.  (PR #76)
+
+---
+
+### Changed
+
+- **Makefile**: added `validate-math`, `docs`, `docs-build`, `docs-deploy`
+  targets; all existing targets updated to use `uv run entropy-table …`
+  where appropriate.  (PR #74, #75, #76)
+
+- **CI pipeline** (`.github/workflows/ci.yml`): installs `--extra docs`,
+  builds MkDocs in the test job, uploads the generated graph artefact.
+  (PR #75)
+
+- **`pyproject.toml`**: src layout, `setuptools_scm` dynamic version, `docs`
+  and `math` optional extras, CLI entry point
+  `entropy-table = "entropy_table.cli:app"`.  (PR #74, #75, #76)
+
+---
+
+### Merged Pull Requests
+
+| # | Title |
+|---|---|
+| #76 | Add SymPy math validator and automated release workflow |
+| #75 | MkDocs Material website + GitHub Pages CI + CONTRIBUTING |
+| #74 | Packaging Sprint 1 – src layout, Typer CLI, Ruff + pre-commit |
+
+---
+
 ## [v0.4.0] – 2026-03-08
 
 ### Summary
@@ -226,6 +305,7 @@ Bootstrap of the contract-first atlas skeleton with:
 - Release dataset packager (`tools/release.py`)
 - Staging workflow and template-based domain extractor
 
+[v1.0.0]: https://github.com/GenesisAeon/entropy-table/releases/tag/v1.0.0
 [v0.4.0]: https://github.com/GenesisAeon/entropy-table/releases/tag/v0.4.0
 [v0.3.0]: https://github.com/GenesisAeon/entropy-table/releases/tag/v0.3.0
 [v0.2.0]: https://github.com/GenesisAeon/entropy-table/releases/tag/v0.2.0

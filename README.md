@@ -2,10 +2,11 @@
 
 [![CI](https://github.com/GenesisAeon/entropy-table/actions/workflows/ci.yml/badge.svg)](https://github.com/GenesisAeon/entropy-table/actions)
 [![Docs](https://img.shields.io/badge/docs-mkdocs--material-green)](https://GenesisAeon.github.io/entropy-table/)
-[![PyPI](https://img.shields.io/badge/PyPI-entropy--table-blue)](https://pypi.org/project/entropy-table/)
+[![PyPI](https://img.shields.io/pypi/v/entropy-table)](https://pypi.org/project/entropy-table/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/GenesisAeon/entropy-table)](https://github.com/GenesisAeon/entropy-table/releases/tag/v1.0.0)
 
-A contract-first scientific data atlas for stochastic thermodynamics, Markov networks, and open quantum systems.
+A contract-first scientific data atlas for stochastic thermodynamics, Markov networks, and open quantum systems — now at **v1.0.0**, its first stable, production-ready release.
 
 This project manages structured YAML representations of physical systems, their thermodynamic entropy production rates, and the mathematical relations between them. It is built on strict schema validation, falsifiability, and reproducible CI/CD pipelines.
 
@@ -19,6 +20,14 @@ This project manages structured YAML representations of physical systems, their 
 * **Machine-Readable API:** All validation tools provide a structured `--json` output for easy integration into web frontends or automated reporting.
 * **Full Typer CLI:** `entropy-table validate-all`, `scaffold`, `visualize`, `health`, `metrics`, `render`.
 * **Beautiful Documentation:** MkDocs Material website with live GitHub Pages deployment.
+
+## Installation
+
+```bash
+pip install entropy-table
+# or with optional SymPy math validator:
+pip install "entropy-table[math]"
+```
 
 ## Quickstart
 
