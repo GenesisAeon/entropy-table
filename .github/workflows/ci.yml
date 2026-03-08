@@ -24,8 +24,9 @@ jobs:
           python-version: "3.11"
 
       # Synchronisiert die exakten Versionen aus der uv.lock in ein .venv
+      # --extra dev installiert pytest, typer, ruff, mypy usw.
       - name: Install dependencies
-        run: uv sync
+        run: uv sync --extra dev
 
       # Fügt das virtuelle uv-Environment dem Runner-Pfad hinzu
       # (Dadurch funktionieren alle nachfolgenden 'make'-Befehle unverändert!)
@@ -47,7 +48,7 @@ jobs:
         run: make validate-all
 
       - name: Analyze atlas health (strict CI mode)
-        run: python tools/analyze_health.py --ci-check
+        run: uv run entropy-table health --ci-check
 
       - name: Generate Atlas Graph
         run: make visualize
