@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 BASE_RELATION = {
+    "schema_version": "1.0.0",
     "id": "rel-test",
     "source_domain_id": "domain-a",
     "target_domain_id": "domain-b",

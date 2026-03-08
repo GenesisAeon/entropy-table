@@ -1,3 +1,4 @@
+schema_version: "1.0.0"
 id: quantum-lindblad-to-ctmc-classical-limit
 source_domain_id: quantum-lindblad
 target_domain_id: ctmc-schnakenberg

@@ -1,3 +1,4 @@
+schema_version: "1.0.0"
 id: coarsegrain-super-to-proxy
 source_domain_id: supersystem-network
 target_domain_id: proxy-other

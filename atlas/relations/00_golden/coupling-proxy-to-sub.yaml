@@ -1,3 +1,4 @@
+schema_version: "1.0.0"
 id: coupling-proxy-to-sub
 source_domain_id: proxy-other
 target_domain_id: subsystem-langevin

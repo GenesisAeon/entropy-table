@@ -1,3 +1,4 @@
+schema_version: "1.0.0"
 id: ctmc-schnakenberg
 title: Schnakenberg Entropy Production in Continuous-Time Markov Networks
 system_type:
