@@ -10,6 +10,7 @@ This project manages structured YAML representations of physical systems, their 
 * **Broad Physics Scope:** Covers Continuous-Time Markov Chains (CTMC), Langevin dynamics (overdamped/underdamped, isothermal/non-isothermal), Biochemical Master Equations (CME), and Quantum Lindblad (GKSL) equations.
 * **Reproducible Toolchain:** Fast, deterministic dependency management via `uv` and a unified `Makefile` interface.
 * **Knowledge Graph:** Automatic generation of Mermaid.js and Graphviz DOT graphs visualizing the composition and approximation limits of the physical systems.
+* **Composition Integrity Validation:** `validate_composition.py` enforces that physical exchange channels cannot silently disappear when subsystems are grouped into a supersystem — via explicit absorption filters or strict transitive inheritance checks.
 * **Machine-Readable API:** All validation tools provide a structured `--json` output for easy integration into web frontends or automated reporting.
 
 ## Quickstart
@@ -34,7 +35,7 @@ The project provides a unified `Makefile` to handle all workflows:
 
 * `make validate` — Runs the strict JSON schema validation for all domains and relations.
 * `make validate-all` — Validates schemas, claims, composition integrity, and bibliographical cross-references.
-* `make test` — Runs the comprehensive test suite (86+ tests) via `pytest`.
+* `make test` — Runs the comprehensive test suite (114 tests) via `pytest`.
 * `make visualize` — Generates a visual Mermaid.js graph of the Atlas in `docs/atlas_graph.mmd`.
 * `make health` — Checks for orphaned domains and unfalsifiable claims.
 * `make render` — Renders the atlas contents to Markdown and LaTeX formats.
