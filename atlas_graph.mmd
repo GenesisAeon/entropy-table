@@ -1,0 +1,36 @@
+%%{ init: { 'theme': 'base', 'themeVariables': {
+    'primaryColor': '#e8f4f8', 'edgeLabelBackground': '#ffffff'
+} } }%%
+flowchart LR
+
+    %% ── Node definitions ─────────────────────────────────────────
+    proxy_other{"Synthetic Other Type Domain"}
+    subsystem_langevin(["Synthetic Langevin Subsystem"])
+    supersystem_network(("Synthetic Supersystem Network"))
+    biochemical_cme(("Biochemical Reaction Networks (Chemic…"))
+    ctmc_schnakenberg(["Schnakenberg Entropy Production in Co…"])
+    ctmc_seifert(["Continuous-Time Markov Chain (Seifert)"])
+    overdamped_langevin_st(["Overdamped Langevin — Stochastic Ther…"])
+    overdamped_nonisothermal_langevin(["Overdamped Nonisothermal Langevin"])
+    quantum_lindblad(("Quantum Open Systems (GKSL / Lindblad…"))
+    underdamped_langevin_st(["Underdamped Langevin — Stochastic The…"])
+
+    %% ── Edges ────────────────────────────────────────────────────
+    supersystem_network -.->|coarse| proxy_other
+    subsystem_langevin --o|part-of| supersystem_network
+    proxy_other <-->|couple| subsystem_langevin
+    biochemical_cme --o|part-of| ctmc_schnakenberg
+    ctmc_schnakenberg -.->|coarse| overdamped_langevin_st
+    ctmc_schnakenberg -->|approx| overdamped_langevin_st
+    overdamped_langevin_st ==>|regime| overdamped_langevin_st
+    quantum_lindblad -->|approx| ctmc_schnakenberg
+    underdamped_langevin_st -->|approx| overdamped_langevin_st
+
+    %% ── Style classes ────────────────────────────────────────────
+    classDef stable fill:#c8e6c9,stroke:#388e3c,color:#1b5e20
+    classDef review fill:#fff9c4,stroke:#f9a825,color:#4e342e
+    classDef draft  fill:#fce4ec,stroke:#c62828,color:#4a148c
+
+    %% ── Node class assignments ───────────────────────────────────
+    class supersystem_network,ctmc_schnakenberg,overdamped_langevin_st,underdamped_langevin_st review
+    class proxy_other,subsystem_langevin,biochemical_cme,ctmc_seifert,overdamped_nonisothermal_langevin,quantum_lindblad draft
