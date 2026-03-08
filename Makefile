@@ -1,4 +1,4 @@
-.PHONY: help validate validate-all test health render visualize visualize-dot metrics release new-domain new-case validate-cases clean docs docs-build docs-deploy
+.PHONY: help validate validate-all validate-math test health render visualize visualize-dot metrics release new-domain new-case validate-cases clean docs docs-build docs-deploy
 
 PYTHON := uv run python
 CLI    := uv run entropy-table
@@ -9,7 +9,8 @@ help:
 	@echo "entropy-table — available targets:"
 	@echo ""
 	@echo "  validate       Validate domain/relation schemas and cross-references"
-	@echo "  validate-all   Run all validation checks (schema + claims + composition + bibliography)"
+	@echo "  validate-all   Run all validation checks (schema + claims + composition + bibliography + math)"
+	@echo "  validate-math  Validate mathematical expressions in atlas domains (SymPy-assisted)"
 	@echo "  test           Run the full pytest test suite"
 	@echo "  health         Analyse atlas health (orphaned domains, unfalsifiable claims, …)"
 	@echo "  render         Render atlas to atlas.md and atlas.tex"
@@ -35,6 +36,10 @@ validate-all: validate
 	$(PYTHON) $(TOOLS)/validate_composition.py
 	$(PYTHON) $(TOOLS)/validate_bibliography.py
 	$(CLI) validate-cases
+	$(CLI) validate-math
+
+validate-math:
+	$(CLI) validate-math
 
 # ── Testing ───────────────────────────────────────────────────────────────────
 
