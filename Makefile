@@ -1,4 +1,4 @@
-.PHONY: help validate validate-all test health render visualize visualize-dot metrics release new-domain clean
+.PHONY: help validate validate-all test health render visualize visualize-dot metrics release new-domain new-case validate-cases clean
 
 PYTHON := python
 TOOLS  := tools
@@ -17,6 +17,8 @@ help:
 	@echo "  metrics       Compute operational atlas metrics (JSON + Markdown)"
 	@echo "  release       Build a release pack  (set VERSION=vX.Y.Z)"
 	@echo "  new-domain    Scaffold a new domain file  (set ID=my-domain)"
+	@echo "  new-case      Scaffold a new case file   (set ID=my-case-v01; optional CLAIM= CALCULATOR=)"
+	@echo "  validate-cases Validate claim↔case cross-references (dangling + orphaned)"
 	@echo "  clean         Remove generated artefacts"
 
 # ── Validation ────────────────────────────────────────────────────────────────
@@ -28,6 +30,7 @@ validate-all: validate
 	$(PYTHON) $(TOOLS)/validate_claims.py
 	$(PYTHON) $(TOOLS)/validate_composition.py
 	$(PYTHON) $(TOOLS)/validate_bibliography.py
+	$(PYTHON) $(TOOLS)/manage_cases.py validate
 
 # ── Testing ───────────────────────────────────────────────────────────────────
 
@@ -71,6 +74,25 @@ new-domain:
 	else \
 		$(PYTHON) $(TOOLS)/scaffold.py domain "$(ID)" --category "$(or $(CATEGORY),01_physics)"; \
 	fi
+
+new-case:
+	@if [ -z "$(ID)" ]; then \
+		read -p "Case ID (kebab-case with optional -vNN, e.g. ctmc-3cycle-v01): " _id; \
+		$(PYTHON) $(TOOLS)/manage_cases.py create "$$_id" \
+			--category "$(or $(CATEGORY),01_physics)" \
+			$(if $(CLAIM),--claim-file "$(CLAIM)") \
+			$(if $(DOMAIN),--domain "$(DOMAIN)") \
+			$(if $(CALCULATOR),--calculator "$(CALCULATOR)"); \
+	else \
+		$(PYTHON) $(TOOLS)/manage_cases.py create "$(ID)" \
+			--category "$(or $(CATEGORY),01_physics)" \
+			$(if $(CLAIM),--claim-file "$(CLAIM)") \
+			$(if $(DOMAIN),--domain "$(DOMAIN)") \
+			$(if $(CALCULATOR),--calculator "$(CALCULATOR)"); \
+	fi
+
+validate-cases:
+	$(PYTHON) $(TOOLS)/manage_cases.py validate
 
 # ── Cleanup ───────────────────────────────────────────────────────────────────
 
