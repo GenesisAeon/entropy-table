@@ -1,0 +1,65 @@
+site_name: Entropy Table
+site_url: https://GenesisAeon.github.io/entropy-table
+repo_url: https://github.com/GenesisAeon/entropy-table
+repo_name: GenesisAeon/entropy-table
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: amber
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.indexes
+    - content.code.copy
+    - content.tabs.link
+    - content.tooltips
+    - navigation.path
+    - navigation.top
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - admonition
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search
+  - gen-files:
+      scripts:
+        - docs/gen_pages.py
+  - literate-nav
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+
+nav:
+  - Home: index.md
+  - "Schema & Contract": schema.md
+  - "Developer Guide": developer-guide.md
+  - "Existing Docs":
+    - Contribution Rules: contribution.md
+    - Claims: claims.md
+    - Cases Conventions: cases_conventions.md
+    - Composition Integrity: composition_integrity.md
+    - Compute: compute.md
+    - Compute Cases: compute_cases.md
+    - Contract: contract.md
+    - Effective Closure: effective-closure.md
+    - Ingestion Checklist: ingestion_checklist.md
+    - Metrics: metrics.md
+    - Releases: releases.md
+    - Schema RFC: schema_rfc_pr14.md
+    - Variant Domain Pattern: variant_domain_pattern.md
+    - Workflow: workflow_staging_and_extraction.md

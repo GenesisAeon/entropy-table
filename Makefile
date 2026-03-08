@@ -1,4 +1,4 @@
-.PHONY: help validate validate-all test health render visualize visualize-dot metrics release new-domain new-case validate-cases clean
+.PHONY: help validate validate-all test health render visualize visualize-dot metrics release new-domain new-case validate-cases clean docs docs-build docs-deploy
 
 PYTHON := uv run python
 CLI    := uv run entropy-table
@@ -89,6 +89,17 @@ new-case:
 
 validate-cases:
 	$(CLI) validate-cases
+
+# ── Documentation ─────────────────────────────────────────────────────────────
+
+docs:
+	uv run mkdocs serve
+
+docs-build:
+	uv run mkdocs build
+
+docs-deploy:
+	uv run mkdocs gh-deploy --force
 
 # ── Cleanup ───────────────────────────────────────────────────────────────────
 
