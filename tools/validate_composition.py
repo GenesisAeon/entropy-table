@@ -145,7 +145,14 @@ def validate_transitive_channels(
     deeper hierarchies (A -> B -> C) without requiring explicit graph recursion.
     """
     errors: list[str] = []
-    for source, target, _path, _relation_id, _channels, _explicit in composition_edges:
+    for source, target, _path, _relation_id, _channels, explicit_channels in composition_edges:
+        # When the relation explicitly restricts channels (channels: [...]), those specific
+        # channels are the only ones that flow through the composition; the remaining subsystem
+        # channels are deliberately absorbed by the coarse-graining.  The existing
+        # relation-channel check already validates that declared channels exist in both domains,
+        # so we skip the transitive check here to avoid false positives.
+        if explicit_channels:
+            continue
         if source not in domains_by_id or target not in domains_by_id:
             continue
         source_boundary = domains_by_id[source].get("boundary", {})
