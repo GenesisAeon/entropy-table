@@ -209,6 +209,58 @@ def test_json_output_valid(tmp_path: Path) -> None:
     assert data["errors"] == []
 
 
+def test_transitive_channel_mismatch(tmp_path: Path) -> None:
+    """Subsystem declares 'information'; supersystem only declares 'heat'.
+
+    validate_transitive_channels must detect that the supersystem ('molecule')
+    does not cover all exchange channels of its subsystem ('atom') and return
+    exit code 1 with a clear error message naming the missing channel.
+    """
+    atlas = tmp_path / "atlas"
+    write_yaml(atlas / "domains" / "atom.yaml", domain_payload("atom", exchange_channels=["information"]))
+    write_yaml(atlas / "domains" / "molecule.yaml", domain_payload("molecule", exchange_channels=["heat"]))
+    write_yaml(atlas / "relations" / "comp.yaml", composition_relation("comp-atom-to-molecule", "atom", "molecule"))
+
+    result = run_validator(atlas)
+
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "integrity error" in result.stdout
+    assert "molecule" in result.stdout
+    assert "atom" in result.stdout
+    assert "information" in result.stdout
+
+
+def test_transitive_channel_mismatch_json(tmp_path: Path) -> None:
+    """JSON output for transitive channel mismatch contains the right error."""
+    atlas = tmp_path / "atlas"
+    write_yaml(atlas / "domains" / "atom.yaml", domain_payload("atom", exchange_channels=["information"]))
+    write_yaml(atlas / "domains" / "molecule.yaml", domain_payload("molecule", exchange_channels=["heat"]))
+    write_yaml(atlas / "relations" / "comp.yaml", composition_relation("comp-atom-to-molecule", "atom", "molecule"))
+
+    result = run_validator(atlas, "--json")
+
+    assert result.returncode == 1
+    data = json.loads(result.stdout)
+    assert data["summary"]["valid"] is False
+    assert any("information" in e and "integrity error" in e for e in data["errors"])
+
+
+def test_transitive_channel_superset_passes(tmp_path: Path) -> None:
+    """Supersystem declaring a superset of subsystem channels must pass."""
+    atlas = tmp_path / "atlas"
+    write_yaml(atlas / "domains" / "atom.yaml", domain_payload("atom", exchange_channels=["information"]))
+    write_yaml(
+        atlas / "domains" / "molecule.yaml",
+        domain_payload("molecule", exchange_channels=["heat", "information"]),
+    )
+    write_yaml(atlas / "relations" / "comp.yaml", composition_relation("comp-atom-to-molecule", "atom", "molecule"))
+
+    result = run_validator(atlas)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "integrity error" not in result.stdout
+
+
 def test_json_output_cycle_error(tmp_path: Path) -> None:
     atlas = tmp_path / "atlas"
     write_yaml(atlas / "domains" / "a.yaml", domain_payload("a"))

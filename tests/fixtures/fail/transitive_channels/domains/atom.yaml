@@ -1,0 +1,6 @@
+id: atom
+boundary:
+  closure_type: "open"
+  exchange_channels:
+    - information
+  external_entities: []

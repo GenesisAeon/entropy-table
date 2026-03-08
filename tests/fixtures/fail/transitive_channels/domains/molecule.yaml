@@ -1,0 +1,6 @@
+id: molecule
+boundary:
+  closure_type: "open"
+  exchange_channels:
+    - heat        # "information" fehlt hier absichtlich
+  external_entities: []

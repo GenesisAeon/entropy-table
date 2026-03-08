@@ -132,6 +132,49 @@ def _format_cycle(cycle: list[str]) -> str:
     return " -> ".join(cycle)
 
 
+def validate_transitive_channels(
+    composition_edges: list[tuple[str, str, Path, str, list[str], bool]],
+    domains_by_id: dict[str, dict[str, Any]],
+    domain_path_by_id: dict[str, Path],
+) -> list[str]:
+    """Check that each supersystem declares all exchange channels of its subsystems.
+
+    For every composition edge (source -> target), the target (supersystem) must
+    declare at least the channels the source (subsystem) declares.  Because this
+    check runs on every direct edge, the constraint propagates automatically through
+    deeper hierarchies (A -> B -> C) without requiring explicit graph recursion.
+    """
+    errors: list[str] = []
+    for source, target, _path, _relation_id, _channels, explicit_channels in composition_edges:
+        # When the relation explicitly restricts channels (channels: [...]), those specific
+        # channels are the only ones that flow through the composition; the remaining subsystem
+        # channels are deliberately absorbed by the coarse-graining.  The existing
+        # relation-channel check already validates that declared channels exist in both domains,
+        # so we skip the transitive check here to avoid false positives.
+        if explicit_channels:
+            continue
+        if source not in domains_by_id or target not in domains_by_id:
+            continue
+        source_boundary = domains_by_id[source].get("boundary", {})
+        target_boundary = domains_by_id[target].get("boundary", {})
+        if not isinstance(source_boundary, dict) or not isinstance(target_boundary, dict):
+            continue
+        source_channels = source_boundary.get("exchange_channels")
+        target_channels = target_boundary.get("exchange_channels")
+        if not isinstance(source_channels, list) or not isinstance(target_channels, list):
+            continue
+        source_channel_set = {str(c) for c in source_channels}
+        target_channel_set = {str(c) for c in target_channels}
+        missing = sorted(source_channel_set - target_channel_set)
+        if missing:
+            target_path = domain_path_by_id.get(target, Path("<unknown>"))
+            errors.append(
+                f"{target_path}: integrity error in '{target}': supersystem does not declare all "
+                f"channels of its subsystem '{source}'. Missing: {missing}"
+            )
+    return errors
+
+
 def _composition_domain_refs(relation: dict[str, Any]) -> list[str]:
     composition = relation.get("composition")
     if not isinstance(composition, dict):
@@ -285,6 +328,8 @@ def validate_composition(atlas_root: Path, max_depth_warning: int = DEFAULT_MAX_
                     f"{path}: relation '{relation_id}' channel '{channel}' must be declared in both "
                     f"source({source}).boundary.exchange_channels and target({target}).boundary.exchange_channels"
                 )
+
+    errors.extend(validate_transitive_channels(composition_edges, domains_by_id, domain_path_by_id))
 
     if depth > max_depth_warning:
         warnings.append(

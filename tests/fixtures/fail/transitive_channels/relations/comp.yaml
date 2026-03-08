@@ -1,0 +1,8 @@
+id: comp-atom-to-molecule
+source_domain_id: atom
+target_domain_id: molecule
+relation_type: composition
+composition:
+  kind: "subsystem_of"
+  parts:
+    - domain_ref: atom
