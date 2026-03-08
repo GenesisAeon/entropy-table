@@ -1,25 +1,29 @@
 .PHONY: help validate validate-all test health render visualize visualize-dot metrics release new-domain new-case validate-cases clean
 
-PYTHON := python
+PYTHON := uv run python
+CLI    := uv run entropy-table
 TOOLS  := tools
 VERSION ?= dev
 
 help:
 	@echo "entropy-table — available targets:"
 	@echo ""
-	@echo "  validate      Validate domain/relation schemas and cross-references"
-	@echo "  validate-all  Run all validation checks (schema + claims + composition + bibliography)"
-	@echo "  test          Run the full pytest test suite"
-	@echo "  health        Analyse atlas health (orphaned domains, unfalsifiable claims, …)"
-	@echo "  render        Render atlas to atlas.md and atlas.tex"
-	@echo "  visualize     Generate Mermaid graph (docs/atlas_graph.mmd)"
-	@echo "  visualize-dot Generate Graphviz DOT graph (docs/atlas_graph.dot)"
-	@echo "  metrics       Compute operational atlas metrics (JSON + Markdown)"
-	@echo "  release       Build a release pack  (set VERSION=vX.Y.Z)"
-	@echo "  new-domain    Scaffold a new domain file  (set ID=my-domain)"
-	@echo "  new-case      Scaffold a new case file   (set ID=my-case-v01; optional CLAIM= CALCULATOR=)"
+	@echo "  validate       Validate domain/relation schemas and cross-references"
+	@echo "  validate-all   Run all validation checks (schema + claims + composition + bibliography)"
+	@echo "  test           Run the full pytest test suite"
+	@echo "  health         Analyse atlas health (orphaned domains, unfalsifiable claims, …)"
+	@echo "  render         Render atlas to atlas.md and atlas.tex"
+	@echo "  visualize      Generate Mermaid graph (docs/atlas_graph.mmd)"
+	@echo "  visualize-dot  Generate Graphviz DOT graph (docs/atlas_graph.dot)"
+	@echo "  metrics        Compute operational atlas metrics (JSON + Markdown)"
+	@echo "  release        Build a release pack  (set VERSION=vX.Y.Z)"
+	@echo "  new-domain     Scaffold a new domain file  (set ID=my-domain)"
+	@echo "  new-case       Scaffold a new case file   (set ID=my-case-v01; optional CLAIM= CALCULATOR=)"
 	@echo "  validate-cases Validate claim↔case cross-references (dangling + orphaned)"
-	@echo "  clean         Remove generated artefacts"
+	@echo "  clean          Remove generated artefacts"
+	@echo ""
+	@echo "  Or use the CLI directly:"
+	@echo "    uv run entropy-table --help"
 
 # ── Validation ────────────────────────────────────────────────────────────────
 
@@ -30,7 +34,7 @@ validate-all: validate
 	$(PYTHON) $(TOOLS)/validate_claims.py
 	$(PYTHON) $(TOOLS)/validate_composition.py
 	$(PYTHON) $(TOOLS)/validate_bibliography.py
-	$(PYTHON) $(TOOLS)/manage_cases.py validate
+	$(CLI) validate-cases
 
 # ── Testing ───────────────────────────────────────────────────────────────────
 
@@ -40,30 +44,30 @@ test:
 # ── Atlas health & metrics ────────────────────────────────────────────────────
 
 health:
-	$(PYTHON) $(TOOLS)/analyze_health.py
+	$(CLI) health
 
 metrics:
-	$(PYTHON) $(TOOLS)/metrics.py --format markdown
+	$(CLI) metrics --format markdown
 
 # ── Rendering ─────────────────────────────────────────────────────────────────
 
 render:
-	$(PYTHON) $(TOOLS)/render.py
+	$(CLI) render
 
 # ── Visualisation ─────────────────────────────────────────────────────────────
 
 visualize:
-	$(PYTHON) -m tools.visualize --format mermaid --output docs/atlas_graph.mmd
+	$(PYTHON) -m entropy_table.commands.visualize --format mermaid --output docs/atlas_graph.mmd
 	@echo "Mermaid graph written to docs/atlas_graph.mmd"
 
 visualize-dot:
-	$(PYTHON) -m tools.visualize --format dot --output docs/atlas_graph.dot
+	$(PYTHON) -m entropy_table.commands.visualize --format dot --output docs/atlas_graph.dot
 	@echo "Graphviz DOT graph written to docs/atlas_graph.dot"
 
 # ── Release ───────────────────────────────────────────────────────────────────
 
 release:
-	$(PYTHON) $(TOOLS)/release.py --version $(VERSION)
+	$(CLI) release --version $(VERSION)
 
 # ── Scaffolding ───────────────────────────────────────────────────────────────
 
@@ -78,21 +82,13 @@ new-domain:
 new-case:
 	@if [ -z "$(ID)" ]; then \
 		read -p "Case ID (kebab-case with optional -vNN, e.g. ctmc-3cycle-v01): " _id; \
-		$(PYTHON) $(TOOLS)/manage_cases.py create "$$_id" \
-			--category "$(or $(CATEGORY),01_physics)" \
-			$(if $(CLAIM),--claim-file "$(CLAIM)") \
-			$(if $(DOMAIN),--domain "$(DOMAIN)") \
-			$(if $(CALCULATOR),--calculator "$(CALCULATOR)"); \
+		$(CLI) scaffold case "$$_id" --category "$(or $(CATEGORY),01_physics)"; \
 	else \
-		$(PYTHON) $(TOOLS)/manage_cases.py create "$(ID)" \
-			--category "$(or $(CATEGORY),01_physics)" \
-			$(if $(CLAIM),--claim-file "$(CLAIM)") \
-			$(if $(DOMAIN),--domain "$(DOMAIN)") \
-			$(if $(CALCULATOR),--calculator "$(CALCULATOR)"); \
+		$(CLI) scaffold case "$(ID)" --category "$(or $(CATEGORY),01_physics)"; \
 	fi
 
 validate-cases:
-	$(PYTHON) $(TOOLS)/manage_cases.py validate
+	$(CLI) validate-cases
 
 # ── Cleanup ───────────────────────────────────────────────────────────────────
 

@@ -9,20 +9,20 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from common import (  # noqa: E402
+
+from entropy_table.core.common import (
     ATLAS,
     ROOT,
     load_yaml,
 )
-from validate import (  # noqa: E402
+from entropy_table.commands.validate import (
     format_schema_errors,
     gather_citation_refs_domain,
     gather_citation_refs_relation,
 )
-from validate_bibliography import collect_citation_refs, load_bibliography_ids  # noqa: E402
-from validate_claims import validate_claim_file  # noqa: E402
+from entropy_table.commands.validate_bibliography import collect_citation_refs, load_bibliography_ids
+from entropy_table.commands.validate_claims import validate_claim_file
 
 ENTRY_TYPES = ("domain", "relation", "claim")
 

@@ -10,12 +10,9 @@ from typing import Any
 
 import yaml
 
-TOOLS_ROOT = Path(__file__).resolve().parents[1]
-if str(TOOLS_ROOT) not in sys.path:
-    sys.path.insert(0, str(TOOLS_ROOT))
 
 from .case_runner import load_case, resolve_case_paths, run_case
-from bindings import CLAIM_ID_RE, parse_claim_ids_from_case_yaml
+from entropy_table.core.bindings import CLAIM_ID_RE, parse_claim_ids_from_case_yaml
 
 DEFAULT_REPORT_PATH = Path("outputs/compute_report.md")
 

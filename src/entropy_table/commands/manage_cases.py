@@ -27,7 +27,7 @@ from typing import Any
 
 import yaml
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 ATLAS = ROOT / "atlas"
 CLAIMS_DIR = ATLAS / "claims"
 CASES_DIR = ATLAS / "cases"
