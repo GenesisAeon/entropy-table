@@ -7,6 +7,63 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [v0.4.0] – 2026-03-08
+
+### Summary
+
+v0.4.0 closes the last major integrity gap in the composition layer: physical
+exchange channels can no longer silently disappear when subsystems are grouped
+into a supersystem.  The release introduces a two-mode channel-inheritance
+validator that is grounded in the absorption / coarse-graining semantics of the
+atlas schema.
+
+---
+
+### Added
+
+- **Transitive channel-inheritance validation**
+  (`validate_transitive_channels` in `tools/validate_composition.py`):
+  automatically enforces that every `exchange_channel` of a subsystem is
+  accounted for in its supersystem.  Two modes are implemented:
+
+  * **Explicit filter (absorption semantics):** when a composition relation
+    declares a `channels` (or `exchange_channels` / `coupling_channels`) field,
+    that list acts as a coarse-graining filter.  The validator checks that every
+    listed channel appears in *both* `boundary.exchange_channels` of the source
+    and target domain; channels absent from the list are treated as internally
+    absorbed and are not required to surface in the supersystem.
+
+  * **Implicit transitive inheritance:** when no `channels` field is present,
+    the validator computes the set-difference
+    `source.exchange_channels − target.exchange_channels`.  Any non-empty
+    difference is reported as an `integrity error` naming the missing channels,
+    the subsystem, and the supersystem — preventing exchange streams from
+    vanishing unintentionally during mere grouping operations.
+
+  Legacy heuristic composition signals (coupling relations carrying a `parts`
+  list) emit a `WARNING` and are skipped by the strict transitive check for
+  backwards compatibility.
+
+- **Failure-fixture suite** (`tests/fixtures/fail/transitive_channels/`):
+  three minimal YAML fixtures (`atom.yaml`, `molecule.yaml`, `comp.yaml`)
+  demonstrate the canonical failing case (subsystem declares `information`;
+  supersystem only declares `heat`).
+
+- **5 new tests** in `tests/test_validate_composition.py` covering:
+  transitive mismatch (text + JSON output), superset-passes, explicit-filter
+  passes, and legacy-heuristic warning.
+  Full suite: **114 tests**, all passing.  (PR #72)
+
+---
+
+### Merged Pull Requests
+
+| # | Title |
+|---|---|
+| #72 | Add `validate_transitive_channels` for composition integrity |
+
+---
+
 ## [v0.3.0] – 2026-03-08
 
 ### Summary
@@ -169,6 +226,7 @@ Bootstrap of the contract-first atlas skeleton with:
 - Release dataset packager (`tools/release.py`)
 - Staging workflow and template-based domain extractor
 
+[v0.4.0]: https://github.com/GenesisAeon/entropy-table/releases/tag/v0.4.0
 [v0.3.0]: https://github.com/GenesisAeon/entropy-table/releases/tag/v0.3.0
 [v0.2.0]: https://github.com/GenesisAeon/entropy-table/releases/tag/v0.2.0
 [v0.1.0]: https://github.com/GenesisAeon/entropy-table/releases/tag/v0.1.0
