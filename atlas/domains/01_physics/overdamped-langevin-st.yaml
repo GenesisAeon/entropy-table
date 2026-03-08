@@ -1,3 +1,4 @@
+schema_version: "1.0.0"
 id: overdamped-langevin-st
 title: Overdamped Langevin — Stochastic Thermodynamics
 system_type:

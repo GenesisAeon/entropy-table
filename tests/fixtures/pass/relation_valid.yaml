@@ -1,3 +1,4 @@
+schema_version: "1.0.0"
 id: composition-sub-to-super
 source_domain_id: subsystem-langevin
 target_domain_id: supersystem-network

@@ -1,3 +1,4 @@
+schema_version: "1.0.0"
 id: subsystem-langevin
 title: Synthetic Langevin Subsystem
 system_type:

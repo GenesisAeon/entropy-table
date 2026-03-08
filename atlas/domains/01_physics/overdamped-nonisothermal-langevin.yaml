@@ -1,3 +1,4 @@
+schema_version: "1.0.0"
 id: overdamped-nonisothermal-langevin
 title: Overdamped Nonisothermal Langevin
 system_type:

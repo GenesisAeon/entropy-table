@@ -55,8 +55,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
     args = parser.parse_args(argv)
 
-    domain_validator = Draft202012Validator(json.loads(DOMAIN_SCHEMA_PATH.read_text(encoding="utf-8")))
-    relation_validator = Draft202012Validator(json.loads(RELATION_SCHEMA_PATH.read_text(encoding="utf-8")))
+    domain_schema = json.loads(DOMAIN_SCHEMA_PATH.read_text(encoding="utf-8"))
+    domain_schema_version = domain_schema.get("version", "unknown")
+    domain_validator = Draft202012Validator(domain_schema)
+
+    relation_schema = json.loads(RELATION_SCHEMA_PATH.read_text(encoding="utf-8"))
+    relation_schema_version = relation_schema.get("version", "unknown")
+    relation_validator = Draft202012Validator(relation_schema)
 
     domain_paths = domain_files()
     relation_paths = relation_files()
@@ -66,9 +71,25 @@ def main(argv: list[str] | None = None) -> int:
 
     # 1. Schema Validation
     for path in domain_paths:
+        file_version = load_yaml(path).get("schema_version")
+        if file_version != domain_schema_version:
+            errors.append({
+                "file": str(path),
+                "error_type": "VersionConflict",
+                "message": f"schema_version mismatch: file declares '{file_version}', schema expects '{domain_schema_version}'"
+            })
+            continue
         errors.extend(format_schema_errors(path, domain_validator))
 
     for path in relation_paths:
+        file_version = load_yaml(path).get("schema_version")
+        if file_version != relation_schema_version:
+            errors.append({
+                "file": str(path),
+                "error_type": "VersionConflict",
+                "message": f"schema_version mismatch: file declares '{file_version}', schema expects '{relation_schema_version}'"
+            })
+            continue
         errors.extend(format_schema_errors(path, relation_validator))
 
     # 2. Domain Cross-References & Custom Validation

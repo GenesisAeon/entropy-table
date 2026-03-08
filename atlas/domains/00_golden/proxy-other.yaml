@@ -1,3 +1,4 @@
+schema_version: "1.0.0"
 id: proxy-other
 title: Synthetic Other Type Domain
 system_type:

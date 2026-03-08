@@ -1,3 +1,4 @@
+schema_version: "1.0.0"
 id: quantum-lindblad
 title: Quantum Open Systems (GKSL / Lindblad Master Equation)
 system_type:
