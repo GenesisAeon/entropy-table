@@ -12,13 +12,10 @@ from typing import Any
 
 import yaml
 
-TOOLS_ROOT = Path(__file__).resolve().parents[1]
-if str(TOOLS_ROOT) not in sys.path:
-    sys.path.insert(0, str(TOOLS_ROOT))
 
-from bindings import parse_claim_ids_from_case_yaml
+from entropy_table.core.bindings import parse_claim_ids_from_case_yaml
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 class CaseError(ValueError):

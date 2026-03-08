@@ -5,9 +5,7 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from common import ROOT, load_yaml
+from entropy_table.core.common import ROOT, load_yaml
 
 CLAIMS_ROOT = ROOT / "atlas" / "claims"
 

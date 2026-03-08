@@ -4,7 +4,7 @@ from pathlib import Path
 
 import yaml
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 ATLAS = ROOT / "atlas"
 DOMAINS_DIR = ATLAS / "domains"
 RELATIONS_DIR = ATLAS / "relations"

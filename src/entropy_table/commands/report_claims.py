@@ -4,8 +4,8 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from query_claims import load_claims
-from bindings import parse_case_ids_from_claim_yaml
+from entropy_table.commands.query_claims import load_claims
+from entropy_table.core.bindings import parse_case_ids_from_claim_yaml
 
 OUTPUT_PATH = Path("outputs/claims_report.md")
 
