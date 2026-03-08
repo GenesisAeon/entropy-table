@@ -7,6 +7,68 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [v0.3.0] – 2026-03-08
+
+### Summary
+
+v0.3.0 consolidates the infrastructure of the atlas into a stable, production-ready
+foundation.  The sprint introduces strict schema versioning, an automated case
+management layer, interactive scaffolding for new domains, and verified DOI
+caching — all wired into the existing `make` workflow and the CI pipeline.
+
+---
+
+### Added
+
+- **Case Management Tool** (`tools/manage_cases.py`): two subcommands —
+  `create` scaffolds a case file from `templates/case_template.yaml` (with
+  optional `--claim-file` to infer domain and category automatically);
+  `validate` cross-checks every claim's `evidence.cases` list against actual
+  files in `atlas/cases/`, reporting dangling references (hard error) and
+  orphaned cases (soft warning, promoted to error with `--strict`).
+  Wired into `make new-case`, `make validate-cases`, and the `validate-all`
+  target so CI detects referential breaks automatically.
+  17 new tests; full 103-test suite passes.  (PR #68)
+- **Scaffolding** (`tools/scaffold.py`, `make new-domain`): stamps out a new
+  domain YAML from `templates/domain_template.yaml` with the correct `id`
+  field injected and every other field left as an explicit `<TODO:…>`
+  placeholder.  Prevents the "copy-and-forget-to-change-the-id" class of
+  contributor errors; enforces kebab-case for entity IDs and the
+  digit-prefixed underscore convention (e.g. `01_physics`) for category
+  names.  Interactive prompt fires when `ID` is omitted.  (PR #67)
+- **DOI Caching & Network Verification** (`--verify-network` flag on
+  `validate_bibliography.py`): persistent DOI cache at
+  `cache/valid_dois.json` with exponential backoff on transient HTTP errors;
+  placeholder DOIs (`10.0000/…`) are silently skipped so golden fixtures
+  never trigger false CI failures.  Cache wired into `actions/cache@v4`,
+  keyed on the hash of `refs.yaml`, so it refreshes automatically when
+  citations change.  (PR #66)
+
+### Changed
+
+- **Schema Versioning** (`atlas/schema/domain.schema.json`,
+  `atlas/schema/relation.schema.json`): `schema_version` is now a required,
+  enum-enforced field (`"1.0.0"`) across every domain and relation YAML.
+  `tools/validate.py` emits a clear `VersionConflict` pre-check error (with
+  declared vs. expected versions) before falling through to jsonschema,
+  eliminating redundant enum noise in error output.  All 10 domain YAMLs
+  and 9 relation YAMLs migrated; `templates/domain_template.yaml` seeds
+  the correct value so `scaffold.py` output is valid out of the box.
+  8 new schema-version tests; 111 tests total.  (PR #69)
+
+---
+
+### Merged Pull Requests
+
+| # | Title |
+|---|---|
+| #69 | Add `schema_version` v1.0.0 to domain and relation schemas |
+| #68 | Add case management tool with `create`/`validate` subcommands |
+| #67 | Add scaffold tool and `make new-domain` Makefile target |
+| #66 | Skip placeholder DOIs and add network verification with DOI caching |
+
+---
+
 ## [v0.2.0] – 2026-03-07
 
 ### Summary
@@ -107,5 +169,6 @@ Bootstrap of the contract-first atlas skeleton with:
 - Release dataset packager (`tools/release.py`)
 - Staging workflow and template-based domain extractor
 
+[v0.3.0]: https://github.com/GenesisAeon/entropy-table/releases/tag/v0.3.0
 [v0.2.0]: https://github.com/GenesisAeon/entropy-table/releases/tag/v0.2.0
 [v0.1.0]: https://github.com/GenesisAeon/entropy-table/releases/tag/v0.1.0
