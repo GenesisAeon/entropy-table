@@ -132,6 +132,77 @@ def _format_cycle(cycle: list[str]) -> str:
     return " -> ".join(cycle)
 
 
+def validate_transitive_channels(
+    composition_edges: list[tuple[str, str, Path, str, list[str], bool]],
+    domains_by_id: dict[str, dict[str, Any]],
+    adjacency: dict[str, list[str]],
+    errors: list[str],
+) -> None:
+    """Check that every subsystem's exchange_channels are a subset of its supersystem's.
+
+    For each composition edge (source=subsystem, target=supersystem) where both domains
+    declare boundary.exchange_channels, reports an error if any channel present in the
+    subsystem is absent from the supersystem.  The error message includes the full
+    hierarchical path (e.g. sub-sub -> sub -> super) to simplify root-cause diagnosis.
+
+    Channels that are not declared (exchange_channels missing or not a list) on either
+    side are silently skipped — that omission is already handled by the existing
+    exchange_channels warning logic.
+    """
+    # reverse_adj[node] = list of direct subsystems of node
+    reverse_adj: dict[str, list[str]] = defaultdict(list)
+    for source, target, _, _, _, _ in composition_edges:
+        reverse_adj[target].append(source)
+
+    def _walk_down(node: str, visited: set[str]) -> list[str]:
+        """Return a chain from the deepest reachable subsystem down to node."""
+        children = [c for c in reverse_adj.get(node, []) if c not in visited]
+        if not children:
+            return [node]
+        visited.add(node)
+        return _walk_down(children[0], visited) + [node]
+
+    def _walk_up(node: str, visited: set[str]) -> list[str]:
+        """Return a chain from node up to the topmost supersystem."""
+        parents = [p for p in adjacency.get(node, []) if p not in visited]
+        if not parents:
+            return [node]
+        visited.add(node)
+        return [node] + _walk_up(parents[0], visited)
+
+    for source, target, path, relation_id, _channels, _explicit in composition_edges:
+        sub_domain = domains_by_id.get(source)
+        super_domain = domains_by_id.get(target)
+        if not sub_domain or not super_domain:
+            continue
+
+        sub_boundary = sub_domain.get("boundary")
+        super_boundary = super_domain.get("boundary")
+        if not isinstance(sub_boundary, dict) or not isinstance(super_boundary, dict):
+            continue
+
+        sub_channels = sub_boundary.get("exchange_channels")
+        super_channels = super_boundary.get("exchange_channels")
+        if not isinstance(sub_channels, list) or not isinstance(super_channels, list):
+            continue
+
+        missing = {str(c) for c in sub_channels} - {str(c) for c in super_channels}
+        if not missing:
+            continue
+
+        down_path = _walk_down(source, {source})   # [deepest, ..., source]
+        up_path = _walk_up(target, {target})        # [target, ..., topmost]
+        full_path = " -> ".join(down_path + up_path)
+
+        errors.append(
+            f"Transitive channel integrity violation: supersystem '{target}' does not "
+            f"declare all channels of subsystem '{source}'. "
+            f"Missing: {sorted(missing)}. "
+            f"Path: {full_path} "
+            f"(relation: {relation_id})"
+        )
+
+
 def _composition_domain_refs(relation: dict[str, Any]) -> list[str]:
     composition = relation.get("composition")
     if not isinstance(composition, dict):
@@ -231,6 +302,9 @@ def validate_composition(atlas_root: Path, max_depth_warning: int = DEFAULT_MAX_
             errors.append(f"composition cycle detected: {_format_cycle(cycle)}")
 
     depth = max_depth(adjacency) if not cycle else 0
+
+    if not cycle:
+        validate_transitive_channels(composition_edges, domains_by_id, adjacency, errors)
 
     participating_subsystems = {source for source, _, _, _, _, _ in composition_edges if source in domains_by_id}
     for subsystem_id in sorted(participating_subsystems):

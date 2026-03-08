@@ -1,0 +1,52 @@
+schema_version: "1.0.0"
+id: transitive-mismatch-rel
+source_domain_id: transitive-mismatch-sub
+target_domain_id: transitive-mismatch-super
+relation_type: composition
+# Expected error from validate_composition.py:
+#   Transitive channel integrity violation: supersystem 'transitive-mismatch-super'
+#   does not declare all channels of subsystem 'transitive-mismatch-sub'.
+#   Missing: ['information']. Path: transitive-mismatch-sub -> transitive-mismatch-super
+conditions:
+  text: >
+    The subsystem operates within the supersystem under standard overdamped conditions.
+    The information channel (measurement back-action) is active in the subsystem
+    but has been omitted from the supersystem boundary — a deliberate modelling error
+    used to exercise the transitive consistency check.
+  params: {}
+preserved:
+- entropy_production_rate
+lost:
+- information_channel_accounting
+expected_effect:
+  direction: context_dependent
+  description: >
+    Omitting the information channel at the macro level will lead to underestimated
+    entropy production rates and apparent violations of the second law when comparing
+    micro and macro models.
+composition:
+  kind: subsystem_of
+  parts:
+  - domain_ref: transitive-mismatch-sub
+    role: subsystem
+must_fail_tests:
+- id: mf1
+  statement: >
+    Validator must reject this relation when transitive channel consistency is enforced.
+  expected_outcome: reject
+  rationale: >
+    The supersystem does not re-export the 'information' exchange channel declared by
+    the subsystem, violating transitive channel inclusion.
+  citations:
+  - c1
+  severity: hard
+citations:
+- id: c1
+  type: note
+  ref: synthetic-fixture-transitive-mismatch
+  title: Synthetic fixture for transitive channel mismatch
+  year: 2024
+  authors:
+  - Atlas Team
+status: draft
+synthetic: true
