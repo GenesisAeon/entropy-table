@@ -45,6 +45,7 @@ namespaces = false
 version_scheme = "guess-next-dev"
 local_scheme = "node-and-date"
 write_to = "src/entropy_table/_version.py"
+fallback_version = "1.0.1"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
