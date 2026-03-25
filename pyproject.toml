@@ -53,3 +53,9 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+
+# === Diamond-Propagation: added project.urls & Zenodo ===
+[project.urls]
+Homepage = "https://github.com/GenesisAeon/entropy-table"
+Documentation = "https://genesisaeon.github.io/entropy-table"
+Zenodo = "https://doi.org/10.5281/zenodo.XXXXXXXX"  # <- enter your DOI
