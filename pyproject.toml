@@ -1,4 +1,4 @@
-[build-system]
+﻿[build-system]
 requires = ["setuptools>=68", "wheel", "setuptools_scm[toml]>=8.0"]
 build-backend = "setuptools.build_meta"
 
@@ -59,3 +59,4 @@ target-version = "py310"
 Homepage = "https://github.com/GenesisAeon/entropy-table"
 Documentation = "https://genesisaeon.github.io/entropy-table"
 Zenodo = "https://doi.org/10.5281/zenodo.XXXXXXXX"  # <- enter your DOI
+
