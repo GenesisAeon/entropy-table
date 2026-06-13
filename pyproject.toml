@@ -8,6 +8,7 @@ dynamic = ["version"]
 description = "Contract-first relational entropy atlas engine for stochastic thermodynamics & open quantum systems"
 readme = "README.md"
 requires-python = ">=3.10"
+authors = [{name = "Johann Römer"}]
 license = {text = "MIT"}
 dependencies = [
     "pyyaml>=6.0",
