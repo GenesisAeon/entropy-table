@@ -9,7 +9,6 @@ import shutil
 import sys
 import tempfile
 from typing import Any
-import zipfile
 
 import yaml
 

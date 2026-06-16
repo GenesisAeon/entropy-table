@@ -5,8 +5,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
@@ -90,7 +88,7 @@ def test_filter_status_stable_only() -> None:
     assert result.returncode == 0
     # No draft or review class assignments should appear for nodes
     # (classDef lines are always present; only class *assignments* must be absent)
-    lines = [l for l in result.stdout.splitlines() if l.strip().startswith("class ")]
+    lines = [ln for ln in result.stdout.splitlines() if ln.strip().startswith("class ")]
     for line in lines:
         assert "draft" not in line
         assert "review" not in line
@@ -99,7 +97,7 @@ def test_filter_status_stable_only() -> None:
 def test_filter_status_draft_review() -> None:
     result = run_viz("--filter-status", "draft", "review")
     assert result.returncode == 0
-    lines = [l for l in result.stdout.splitlines() if l.strip().startswith("class ")]
+    lines = [ln for ln in result.stdout.splitlines() if ln.strip().startswith("class ")]
     for line in lines:
         assert "stable" not in line
 
@@ -141,7 +139,7 @@ def test_dot_output_to_file(tmp_path: Path) -> None:
 
 # ── Unit tests for renderers (import directly) ────────────────────────────────
 
-from tools.visualize import (
+from tools.visualize import (  # noqa: E402
     DomainNode,
     RelationEdge,
     render_dot,

@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import argparse
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from collections.abc import Sequence
 from typing import Any
 
 import yaml
@@ -86,7 +86,7 @@ def _discover_atlas_claim_ids() -> set[str]:
 
 
 def write_report(
-    case_paths: list[str | Path],
+    case_paths: Sequence[str | Path],
     *,
     out_path: str | Path = DEFAULT_REPORT_PATH,
     only_failures: bool = False,

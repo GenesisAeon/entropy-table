@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
-import sys
 import tempfile
 from pathlib import Path
 
@@ -52,7 +51,10 @@ def _validate_domain_or_relation(path: Path, entry_type: str, atlas_root: Path) 
     if entry_type == "domain":
         schema_path = atlas_root / "schema" / "domain.schema.json"
         validator = Draft202012Validator(json.loads(schema_path.read_text(encoding="utf-8")))
-        errors.extend(format_schema_errors(path, validator))
+        errors.extend(
+            f"{e['file']}: [{e['error_type']}] {e.get('location', '<root>')}: {e['message']}"
+            for e in format_schema_errors(path, validator)
+        )
 
         citation_ids = {c.get("id") for c in payload.get("citations", []) if isinstance(c, dict)}
         if len(citation_ids) != len(payload.get("citations", [])):
@@ -68,7 +70,10 @@ def _validate_domain_or_relation(path: Path, entry_type: str, atlas_root: Path) 
     if entry_type == "relation":
         schema_path = atlas_root / "schema" / "relation.schema.json"
         validator = Draft202012Validator(json.loads(schema_path.read_text(encoding="utf-8")))
-        errors.extend(format_schema_errors(path, validator))
+        errors.extend(
+            f"{e['file']}: [{e['error_type']}] {e.get('location', '<root>')}: {e['message']}"
+            for e in format_schema_errors(path, validator)
+        )
 
         domain_ids = _discover_domain_ids(atlas_root)
         if payload.get("source_domain_id") not in domain_ids:
@@ -107,8 +112,11 @@ def _validate_claim(path: Path, target_dir: str, atlas_root: Path) -> list[str]:
             temp_path = Path(tmp) / target_dir / path.name
         temp_path.parent.mkdir(parents=True, exist_ok=True)
         temp_path.write_text(path.read_text(encoding="utf-8"), encoding="utf-8")
-        _, errors, _warnings = validate_claim_file(temp_path, domain_ids, relation_ids)
-        return errors
+        _, claim_errors, _warnings = validate_claim_file(temp_path, domain_ids, relation_ids)
+        return [
+            f"{e['file']}: [{e['error_type']}] {e['message']}"
+            for e in claim_errors
+        ]
 
 
 def _validate_bibliography(path: Path, refs_path: Path) -> list[str]:

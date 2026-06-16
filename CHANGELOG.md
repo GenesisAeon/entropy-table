@@ -7,6 +7,29 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [v2.0.0] – 2026-06-16
+
+### Summary
+
+v2.0.0 is the GenesisAeon ecosystem milestone release of entropy-table (P-ENTROPY).
+This tag satisfies the `entropy-table>=1.0.1` constraint required by 10 downstream
+packages (climate-dashboard, cosmic-moment, cosmic-web, fieldtheory, mandala-visualize,
+medium-modulation, mirror-machine, sigillin, sonification, utac-core).
+The version skips `v1.0.x` because those tags are reserved by pre-existing history.
+
+### Added
+
+- `.zenodo.json` — Zenodo metadata for automatic DOI minting via GitHub–Zenodo
+  integration once enabled on zenodo.org.
+- `.github/workflows/release.yml` — updated release workflow with canary
+  (TestPyPI) and production (PyPI + GitHub Release) paths, plus a test job.
+- `.github/ISSUE_TEMPLATE/bug_report.md` and `feature_request.md`.
+- `.github/PULL_REQUEST_TEMPLATE.md`.
+- `RELEASE_GUIDE.md` — documents the versioning and release-cut procedure.
+- `README.md` — Citation section with Zenodo DOI badge placeholder.
+
+---
+
 ## [v1.0.0] – 2026-03-08
 
 ### Summary

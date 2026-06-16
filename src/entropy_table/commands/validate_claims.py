@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from pathlib import Path
 
 from entropy_table.core.common import ROOT, domain_files, load_yaml, relation_files
@@ -95,7 +94,6 @@ def validate_claim_file(
         add_error("ValidationError", "assumptions must contain at least one entry unless claim_kind=definition")
 
     falsification = claim.get("falsification")
-    must_fail_refs: list[str] | None = None
     if not isinstance(falsification, dict):
         add_error("ValidationError", "'falsification' must be an object")
     else:
@@ -103,7 +101,6 @@ def validate_claim_file(
         if not isinstance(refs, list) or not all(isinstance(item, str) and item.strip() for item in refs):
             add_error("ValidationError", "falsification.must_fail_refs must be a list of non-empty strings")
         else:
-            must_fail_refs = refs
             if kind != "definition" and len(refs) < 1:
                 add_error("ValidationError", "falsification.must_fail_refs must contain at least one entry unless claim_kind=definition")
         notes = falsification.get("notes")

@@ -1,7 +1,6 @@
 """entropy-table – Contract-first scientific entropy atlas CLI."""
 from __future__ import annotations
 
-import sys
 
 import typer
 

@@ -225,9 +225,9 @@ def cmd_validate(args: argparse.Namespace) -> int:
     for case_path in _case_files(cases_root):
         try:
             case_data = _load_yaml(case_path)
-            cid = case_data.get("id")
-            if isinstance(cid, str) and cid.strip():
-                file_cases[cid.strip()] = case_path
+            case_id = case_data.get("id")
+            if isinstance(case_id, str) and case_id.strip():
+                file_cases[case_id.strip()] = case_path
             else:
                 print(f"warning: {case_path} has no valid 'id' field", file=sys.stderr)
         except Exception as exc:
@@ -344,13 +344,13 @@ def main(argv: list[str] | None = None) -> int:
         "--claims-root",
         default=str(CLAIMS_DIR),
         metavar="PATH",
-        help=f"Root directory for claim YAML files (default: atlas/claims).",
+        help="Root directory for claim YAML files (default: atlas/claims).",
     )
     validate_p.add_argument(
         "--cases-root",
         default=str(CASES_DIR),
         metavar="PATH",
-        help=f"Root directory for case YAML files (default: atlas/cases).",
+        help="Root directory for case YAML files (default: atlas/cases).",
     )
     validate_p.add_argument(
         "--strict",

@@ -6,9 +6,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
-from compute.case_runner import discover_cases
-from compute.report import main as report_main
-from compute.report import write_report
+from compute.case_runner import discover_cases  # noqa: E402
+from compute.report import main as report_main  # noqa: E402
+from compute.report import write_report  # noqa: E402
 
 
 def _write_case(path: Path, content: str) -> None:

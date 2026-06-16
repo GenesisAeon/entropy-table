@@ -266,7 +266,7 @@ def validate_composition(atlas_root: Path, max_depth_warning: int = DEFAULT_MAX_
     cycle = find_cycle(adjacency)
     if cycle:
         cycle_edges = list(zip(cycle[:-1], cycle[1:]))
-        cycle_edge_files = sorted({edge_path_by_pair.get(edge) for edge in cycle_edges if edge_path_by_pair.get(edge)})
+        cycle_edge_files = sorted(p for p in (edge_path_by_pair.get(e) for e in cycle_edges) if p is not None)
         if cycle_edge_files:
             files_text = ", ".join(str(p) for p in cycle_edge_files)
             errors.append(f"composition cycle detected: {_format_cycle(cycle)} (relations: {files_text})")
@@ -311,9 +311,7 @@ def validate_composition(atlas_root: Path, max_depth_warning: int = DEFAULT_MAX_
         source_channels = source_boundary.get("exchange_channels") if isinstance(source_boundary, dict) else None
         target_channels = target_boundary.get("exchange_channels") if isinstance(target_boundary, dict) else None
 
-        source_declares = isinstance(source_channels, list)
-        target_declares = isinstance(target_channels, list)
-        if not source_declares or not target_declares:
+        if not isinstance(source_channels, list) or not isinstance(target_channels, list):
             warnings.append(
                 f"{path}: relation '{relation_id}' defines channels but one or both domains do not declare boundary.exchange_channels"
             )
