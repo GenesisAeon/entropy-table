@@ -98,7 +98,8 @@ def main(argv: list[str] | None = None) -> int:
         domain_id = d.get("id")
         if domain_id in domain_ids:
             errors.append({"file": str(path), "error_type": "CrossReferenceError", "message": f"duplicate domain id '{domain_id}'"})
-        domain_ids.add(domain_id)
+        if isinstance(domain_id, str):
+            domain_ids.add(domain_id)
 
         stype = d.get("system_type", {})
         tags = stype.get("tags", []) if isinstance(stype, dict) else []
@@ -126,7 +127,8 @@ def main(argv: list[str] | None = None) -> int:
         rel_id = r.get("id")
         if rel_id in relation_ids:
             errors.append({"file": str(path), "error_type": "CrossReferenceError", "message": f"duplicate relation id '{rel_id}'"})
-        relation_ids.add(rel_id)
+        if isinstance(rel_id, str):
+            relation_ids.add(rel_id)
 
         if r.get("source_domain_id") not in domain_ids:
             errors.append({"file": str(path), "error_type": "CrossReferenceError", "message": f"source_domain_id '{r.get('source_domain_id')}' does not exist"})

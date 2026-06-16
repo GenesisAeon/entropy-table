@@ -47,7 +47,7 @@ def build_index(domains_root: Path, relations_root: Path) -> dict:
         system_type = data.get("system_type") or {}
         context = data.get("context") or {}
         domain_tags = sorted(set((system_type.get("tags") or []) + (context.get("tags") or [])))
-        citation_ids = sorted(c.get("id") for c in (data.get("citations") or []) if isinstance(c, dict) and c.get("id"))
+        citation_ids = sorted(str(c["id"]) for c in (data.get("citations") or []) if isinstance(c, dict) and c.get("id") is not None)
 
         must_fail_rows = []
         for test in data.get("must_fail_tests") or []:
@@ -87,7 +87,7 @@ def build_index(domains_root: Path, relations_root: Path) -> dict:
 
         source = data.get("source_domain_id", "")
         target = data.get("target_domain_id", "")
-        citation_ids = sorted(c.get("id") for c in (data.get("citations") or []) if isinstance(c, dict) and c.get("id"))
+        citation_ids = sorted(str(c["id"]) for c in (data.get("citations") or []) if isinstance(c, dict) and c.get("id") is not None)
 
         must_fail_rows = []
         for test in data.get("must_fail_tests") or []:

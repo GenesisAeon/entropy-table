@@ -7,6 +7,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
+from collections.abc import Sequence
 from typing import Any
 
 import yaml
@@ -182,7 +183,7 @@ def run_case(case_dict: dict[str, Any]) -> dict[str, Any]:
         }
 
 
-def run_cases(list_of_paths: list[str | Path]) -> list[dict[str, Any]]:
+def run_cases(list_of_paths: Sequence[str | Path]) -> list[dict[str, Any]]:
     return [run_case(load_case(path)) for path in list_of_paths]
 
 
