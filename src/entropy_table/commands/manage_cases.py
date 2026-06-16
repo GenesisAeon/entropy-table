@@ -344,13 +344,13 @@ def main(argv: list[str] | None = None) -> int:
         "--claims-root",
         default=str(CLAIMS_DIR),
         metavar="PATH",
-        help=f"Root directory for claim YAML files (default: atlas/claims).",
+        help="Root directory for claim YAML files (default: atlas/claims).",
     )
     validate_p.add_argument(
         "--cases-root",
         default=str(CASES_DIR),
         metavar="PATH",
-        help=f"Root directory for case YAML files (default: atlas/cases).",
+        help="Root directory for case YAML files (default: atlas/cases).",
     )
     validate_p.add_argument(
         "--strict",
