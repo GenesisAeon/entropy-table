@@ -1,0 +1,33 @@
+{
+  "title": "entropy-table — P-ENTROPY: Contract-first relational entropy atlas engine for stochastic thermodynamics & open quantum systems",
+  "description": "<p>Contract-first relational entropy atlas engine for stochastic thermodynamics &amp; open quantum systems.</p><p>Part of the <strong>GenesisAeon</strong> ecosystem (P-ENTROPY, domain: relational entropy atlas engine). </p><p>See <a href=\"https://github.com/GenesisAeon/entropy-table\">github.com/GenesisAeon/entropy-table</a> for source, documentation, and reproducibility notebooks.</p>",
+  "creators": [
+    {
+      "name": "Römer, Johann",
+      "affiliation": "Independent Researcher / MOR Research Collective"
+    }
+  ],
+  "license": "MIT",
+  "upload_type": "software",
+  "access_right": "open",
+  "keywords": [
+    "GenesisAeon",
+    "P-ENTROPY",
+    "relational entropy atlas engine",
+    "UTAC",
+    "CREP",
+    "open science"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "10.5281/zenodo.19645351",
+      "relation": "isPartOf",
+      "resource_type": "publication-article",
+      "scheme": "doi"
+    }
+  ],
+  "version": "2.0.0",
+  "communities": [
+    { "identifier": "genesisaeon" }
+  ]
+}

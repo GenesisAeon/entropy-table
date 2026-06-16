@@ -90,6 +90,16 @@ tests/        # pytest test suite
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/contribution.md](docs/contribution.md).
 
+## Citation
+
+If you use entropy-table in your research, please cite the Zenodo record:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.PLACEHOLDER.svg)](https://doi.org/10.5281/zenodo.PLACEHOLDER)
+
+> DOI will be assigned automatically on the first GitHub Release once
+> Zenodo–GitHub integration is enabled for this repo at
+> https://zenodo.org/account/settings/github/
+
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
