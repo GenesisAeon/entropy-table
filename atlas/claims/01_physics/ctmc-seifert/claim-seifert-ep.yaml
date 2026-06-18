@@ -15,6 +15,9 @@ falsification:
 evidence:
   citations:
     - Seifert2012
-  cases: []
+  cases:
+    - id: "case-seifert-ctmc-ep-positivity"
+      description: "Numerical verification of non-negative entropy production for a randomly generated 3-state CTMC at steady state."
+      compute_ref: "tools/compute/case_seifert_ctmc_ep.py"
   provenance: Encoded from Seifert 2012 review formulation for CTMC stochastic thermodynamics.
-status: draft
+status: stable
