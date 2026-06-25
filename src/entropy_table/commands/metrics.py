@@ -20,6 +20,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Compute operational atlas metrics")
     parser.add_argument("--json-out", default=str(DEFAULT_JSON_OUT))
     parser.add_argument("--md-out", default=str(DEFAULT_MD_OUT))
+    parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
     return parser.parse_args(argv)
 
 
@@ -198,11 +199,14 @@ def main(argv: list[str] | None = None) -> int:
     json_out.parent.mkdir(parents=True, exist_ok=True)
     md_out.parent.mkdir(parents=True, exist_ok=True)
 
+    markdown = render_markdown(metrics, used_index)
     json_out.write_text(json.dumps(metrics, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    md_out.write_text(render_markdown(metrics, used_index), encoding="utf-8")
+    md_out.write_text(markdown, encoding="utf-8")
 
-    print(f"Wrote metrics JSON: {json_out}")
-    print(f"Wrote metrics Markdown: {md_out}")
+    if args.format == "json":
+        print(json.dumps(metrics, indent=2, sort_keys=True))
+    else:
+        print(markdown, end="")
     return 0
 
 

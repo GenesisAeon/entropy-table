@@ -142,5 +142,29 @@ def release(
     raise SystemExit(main(["--version", version]))
 
 
+# ── Scientific calculators ──────────────────────────────────────────────────
+
+compute_app = typer.Typer(help="Toy entropy-production calculators (CTMC, 1D diffusion).")
+app.add_typer(compute_app, name="compute")
+
+
+@compute_app.command("ctmc-ep")
+def compute_ctmc_ep(
+    input_path: str = typer.Option(..., "--in", help="Input JSON file with keys: p, W"),
+) -> None:
+    """Compute CTMC Schnakenberg entropy-production rate."""
+    from entropy_table.compute.cli import _cmd_ctmc_ep
+    raise SystemExit(_cmd_ctmc_ep(input_path))
+
+
+@compute_app.command("diffusion-ep-1d")
+def compute_diffusion_ep_1d(
+    input_path: str = typer.Option(..., "--in", help="Input JSON file with keys: p, J, D, dx"),
+) -> None:
+    """Compute 1D diffusion entropy-production rate."""
+    from entropy_table.compute.cli import _cmd_diffusion_ep_1d
+    raise SystemExit(_cmd_diffusion_ep_1d(input_path))
+
+
 if __name__ == "__main__":
     app()

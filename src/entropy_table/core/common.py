@@ -5,7 +5,15 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
-ATLAS = ROOT / "atlas"
+PACKAGE_DIR = Path(__file__).resolve().parents[1]
+
+# When installed from a wheel, atlas/ data is bundled inside the package
+# (see setup.py); in a source checkout it lives at the repo root instead.
+_BUNDLED_ATLAS = PACKAGE_DIR / "atlas"
+ATLAS = _BUNDLED_ATLAS if _BUNDLED_ATLAS.is_dir() else ROOT / "atlas"
+
+_BUNDLED_TEMPLATES = PACKAGE_DIR / "templates"
+TEMPLATES = _BUNDLED_TEMPLATES if _BUNDLED_TEMPLATES.is_dir() else ROOT / "templates"
 DOMAINS_DIR = ATLAS / "domains"
 RELATIONS_DIR = ATLAS / "relations"
 DOMAIN_SCHEMA_PATH = ATLAS / "schema" / "domain.schema.json"

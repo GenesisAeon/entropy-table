@@ -5,9 +5,9 @@ import re
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[3]
-TEMPLATES_DIR = ROOT / "templates"
-ATLAS_DIR = ROOT / "atlas"
+from entropy_table.core.common import ATLAS as ATLAS_DIR
+from entropy_table.core.common import ROOT
+from entropy_table.core.common import TEMPLATES as TEMPLATES_DIR
 
 _KEBAB_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 # Category dirs follow the repo convention: optional digits + underscore prefix, e.g. 01_physics
