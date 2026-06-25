@@ -4,14 +4,14 @@ import argparse
 import sys
 from pathlib import Path
 
-from entropy_table.core.common import ROOT, load_yaml
+from entropy_table.core.common import ATLAS, ROOT, load_yaml
 
 DEFAULT_REPORT_PATH = Path("outputs/atlas_health.md")
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Analyze atlas graph health and coverage gaps")
-    parser.add_argument("--atlas-root", default="atlas", help="Atlas root directory")
+    parser.add_argument("--atlas-root", default=None, help="Atlas root directory")
     parser.add_argument("--out", default=str(DEFAULT_REPORT_PATH), help="Markdown report output path")
     parser.add_argument(
         "--ci-check",
@@ -194,8 +194,8 @@ def render_markdown(report: dict) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
-    atlas_root = _resolve_path(args.atlas_root, base=ROOT)
-    output_path = _resolve_path(args.out, base=ROOT)
+    atlas_root = _resolve_path(args.atlas_root, base=ROOT) if args.atlas_root else ATLAS
+    output_path = Path(args.out)
 
     report = analyze_health(atlas_root)
 

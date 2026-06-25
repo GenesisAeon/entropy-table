@@ -13,11 +13,11 @@ license = {text = "MIT"}
 dependencies = [
     "pyyaml>=6.0",
     "jsonschema>=4.17",
+    "typer>=0.12",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "typer[all]>=0.12",
     "ruff>=0.6",
     "black>=24.8",
     "mypy>=1.11",
@@ -44,11 +44,14 @@ entropy-table = "entropy_table.cli:app"
 where = ["src"]
 namespaces = false
 
+[tool.setuptools.package-data]
+entropy_table = ["atlas/**/*", "templates/**/*"]
+
 [tool.setuptools_scm]
 version_scheme = "guess-next-dev"
 local_scheme = "node-and-date"
 write_to = "src/entropy_table/_version.py"
-fallback_version = "1.0.1"
+fallback_version = "2.0.0"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -4,9 +4,9 @@
 [![Docs](https://img.shields.io/badge/docs-mkdocs--material-green)](https://GenesisAeon.github.io/entropy-table/)
 [![PyPI](https://img.shields.io/pypi/v/entropy-table)](https://pypi.org/project/entropy-table/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Release](https://img.shields.io/github/v/release/GenesisAeon/entropy-table)](https://github.com/GenesisAeon/entropy-table/releases/tag/v1.0.0)
+[![Release](https://img.shields.io/github/v/release/GenesisAeon/entropy-table)](https://github.com/GenesisAeon/entropy-table/releases/latest)
 
-A contract-first scientific data atlas for stochastic thermodynamics, Markov networks, and open quantum systems — now at **v1.0.0**, its first stable, production-ready release.
+A contract-first scientific data atlas for stochastic thermodynamics, Markov networks, and open quantum systems — now at **v2.0.0**.
 
 This project manages structured YAML representations of physical systems, their thermodynamic entropy production rates, and the mathematical relations between them. It is built on strict schema validation, falsifiability, and reproducible CI/CD pipelines.
 
@@ -55,6 +55,8 @@ uv run entropy-table scaffold domain ...   # new domain scaffold
 uv run entropy-table visualize             # regenerate Atlas graph
 uv run entropy-table health --ci-check     # CI health check
 uv run entropy-table metrics --format markdown
+uv run entropy-table compute ctmc-ep --in case.json          # Schnakenberg EP rate
+uv run entropy-table compute diffusion-ep-1d --in case.json  # 1D diffusion EP rate
 ```
 
 ### Makefile (backward compatible)

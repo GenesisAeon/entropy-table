@@ -5,9 +5,9 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-from entropy_table.core.common import ROOT, load_yaml
+from entropy_table.core.common import ATLAS, load_yaml
 
-CLAIMS_ROOT = ROOT / "atlas" / "claims"
+CLAIMS_ROOT = ATLAS / "claims"
 
 
 def load_claims(claims_root: Path = CLAIMS_ROOT) -> list[dict]:

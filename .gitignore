@@ -25,5 +25,10 @@ outputs/snapshots/
 outputs/manifests/
 src/entropy_table/_version.py
 
+# build-time bundled data copies (see setup.py)
+src/entropy_table/atlas/
+src/entropy_table/templates/
+build/
+
 # MkDocs build output
 site/

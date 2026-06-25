@@ -9,8 +9,9 @@ from typing import Any
 
 import yaml
 
+from entropy_table.core.common import ATLAS
+
 ROOT = Path(__file__).resolve().parents[3]
-ATLAS = ROOT / "atlas"
 
 
 def _load_yaml_object(path: Path) -> dict[str, Any]:

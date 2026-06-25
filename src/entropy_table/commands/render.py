@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from entropy_table.core.common import ROOT, domain_files, load_yaml, relation_files
+from pathlib import Path
 
-OUTPUT_DIR = ROOT / "outputs"
+from entropy_table.core.common import domain_files, load_yaml, relation_files
+
+OUTPUT_DIR = Path("outputs")
 
 
 def _relation_marker(relation: dict) -> str:

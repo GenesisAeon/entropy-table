@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
-from entropy_table.core.common import ROOT, domain_files, load_yaml, relation_files
+from entropy_table.core.common import ATLAS, ROOT, domain_files, load_yaml, relation_files
 from entropy_table.core.bindings import CASE_ID_RE, CLAIM_ID_RE, parse_case_ids_from_claim_yaml
 
 CLAIM_KINDS = {"definition", "theorem", "lemma", "heuristic", "empirical", "limitation"}
@@ -186,19 +186,19 @@ def iter_claim_files(claims_root: Path) -> list[Path]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validate atlas claim files")
-    parser.add_argument("--claims-root", default="atlas/claims", help="Path containing claim YAML files")
-    parser.add_argument("--atlas-root", default="atlas", help="Atlas root containing domains and relations")
+    parser.add_argument("--claims-root", default=None, help="Path containing claim YAML files")
+    parser.add_argument("--atlas-root", default=None, help="Atlas root containing domains and relations")
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
     args = parser.parse_args(argv)
 
-    claims_root = Path(args.claims_root)
-    atlas_root = Path(args.atlas_root)
+    claims_root = Path(args.claims_root) if args.claims_root else ATLAS / "claims"
+    atlas_root = Path(args.atlas_root) if args.atlas_root else ATLAS
     if not claims_root.is_absolute():
         claims_root = ROOT / claims_root
     if not atlas_root.is_absolute():
         atlas_root = ROOT / atlas_root
 
-    if atlas_root != ROOT / "atlas":
+    if atlas_root != ATLAS:
         domain_glob = sorted((atlas_root / "domains").glob("**/*.yaml"))
         relation_glob = sorted((atlas_root / "relations").glob("**/*.yaml"))
         domain_ids: set[str] = set()

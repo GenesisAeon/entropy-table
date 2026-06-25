@@ -8,7 +8,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-from entropy_table.core.common import ROOT, load_yaml
+from entropy_table.core.common import ATLAS, ROOT, load_yaml
 
 TARGET_SUBDIRS = ("domains", "relations", "claims")
 FAIL_STATUSES = {"stable", "review"}
@@ -130,18 +130,18 @@ def validate_file(path: Path, known_refs: set[str]) -> tuple[list[str], list[str
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validate citation IDs against atlas bibliography SSOT")
-    parser.add_argument("--atlas-root", default="atlas", help="Atlas root containing domains/relations/claims")
+    parser.add_argument("--atlas-root", default=None, help="Atlas root containing domains/relations/claims")
     parser.add_argument(
         "--refs",
-        default="atlas/bibliography/refs.yaml",
+        default=None,
         help="Bibliography YAML mapping citation IDs to metadata",
     )
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
     parser.add_argument("--verify-network", action="store_true", help="Verify each DOI resolves via HTTP (uses local cache)")
     args = parser.parse_args(argv)
 
-    atlas_root = Path(args.atlas_root)
-    refs_path = Path(args.refs)
+    atlas_root = Path(args.atlas_root) if args.atlas_root else ATLAS
+    refs_path = Path(args.refs) if args.refs else ATLAS / "bibliography" / "refs.yaml"
     if not atlas_root.is_absolute():
         atlas_root = ROOT / atlas_root
     if not refs_path.is_absolute():

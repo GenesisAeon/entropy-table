@@ -27,11 +27,11 @@ from typing import Any
 
 import yaml
 
-ROOT = Path(__file__).resolve().parents[3]
-ATLAS = ROOT / "atlas"
+from entropy_table.core.common import ATLAS, ROOT, TEMPLATES
+
 CLAIMS_DIR = ATLAS / "claims"
 CASES_DIR = ATLAS / "cases"
-TEMPLATES_DIR = ROOT / "templates"
+TEMPLATES_DIR = TEMPLATES
 
 _CASE_ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*(?:-v[0-9]+)?$")
 _CATEGORY_RE = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
