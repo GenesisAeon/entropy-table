@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/GenesisAeon/entropy-table)](https://github.com/GenesisAeon/entropy-table/releases/latest)
 
-A contract-first scientific data atlas for stochastic thermodynamics, Markov networks, and open quantum systems — now at **v2.0.0**.
+A contract-first scientific data atlas for stochastic thermodynamics, Markov networks, and open quantum systems — now at **v2.0.1**.
 
 This project manages structured YAML representations of physical systems, their thermodynamic entropy production rates, and the mathematical relations between them. It is built on strict schema validation, falsifiability, and reproducible CI/CD pipelines.
 

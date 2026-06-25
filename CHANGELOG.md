@@ -7,6 +7,41 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [v2.0.1] – 2026-06-25
+
+### Summary
+
+v2.0.1 is a patch release that fixes the documented pip-install path, which
+was broken end-to-end despite the v2.0.0 metadata/release-tooling work:
+the CLI crashed immediately, no atlas data shipped in the wheel, and the
+README's own quickstart command failed.
+
+### Fixed
+
+- `typer` was a dev-only dependency, so the installed CLI crashed on
+  `--help` and every command. Moved to core runtime dependencies.
+- `atlas/` and `templates/` data were never bundled into the sdist/wheel;
+  a fresh `pip install` had no atlas content to operate on. A `setup.py`
+  build hook now copies them into the package at build time, with
+  `entropy_table.core.common` resolving the bundled copy when installed
+  (falling back to the repo-root layout for source checkouts).
+- `entropy-table metrics --format markdown` (the README's exact quickstart
+  command) crashed: the Typer wrapper passed `--format` to an argparse
+  parser that didn't define it. Both `markdown` and `json` formats now
+  print real output.
+- `entropy-table validate-all` crashed on a hardcoded atlas-root path that
+  assumed a source-repo checkout (`validate-claims`, `validate-bibliography`,
+  `analyze-health`).
+- `entropy-table health --ci-check` wrote its report into the package
+  install directory instead of the current working directory.
+- The `ctmc-ep` / `diffusion-ep-1d` entropy-production calculators existed
+  but were never wired into the CLI; added as
+  `entropy-table compute ctmc-ep` / `entropy-table compute diffusion-ep-1d`.
+- README claimed v1.0.0 while the package metadata targeted v2.0.0;
+  corrected and documented the new `compute` subcommands.
+
+---
+
 ## [v2.0.0] – 2026-06-16
 
 ### Summary
